@@ -1,0 +1,21 @@
+<title>
+GCM-Server
+</title>
+<form action="/" method="post">
+User:<br>
+<select name="touser">
+<option value='/topics/global'>Send to all</option>
+{% for entry in entries %}
+	<option value={{ entry.token }}> {{ entry.phone_number +"-"+ entry.token}} </option>
+{% endfor %}
+</select>
+<br>
+Title:<br>
+<input type="text" name="title">
+<br>
+Message:<br>
+<input type="text" name="message">
+<br>
+<input type="submit" value="Submit">
+</form> 
+

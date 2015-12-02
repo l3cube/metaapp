@@ -1,0 +1,25 @@
+<title>
+GCM-Server Messages
+</title>
+<table border=1>
+<tr>
+<th>ID</th>
+<th>UUID</th>
+<th>Public Key</th>
+</tr>
+{% for entry in entries %}
+<tr>
+<td>{{ entry.id }}</td>
+<td>{{ entry.uuid }}</td>
+<td>{{ entry.public_key }}</td>
+</tr>
+{% else %}
+<tr>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+{% endfor %}
+</table>
+ 
+

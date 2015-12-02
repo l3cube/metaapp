@@ -1,0 +1,22 @@
+[
+  {
+    "title": "Clothes",
+    "image": "static/level1_all/clothes.png",
+    "more":true
+  },
+  {
+    "title": "Electronics",
+    "image": "static/level1_all/electronics.png",
+    "more":true
+  },
+  {
+    "title": "Food",
+    "image": "static/level1_all/food.png",
+    "more":true
+  },
+  {
+    "title": "Taxi",
+    "image": "static/level1_all/taxi.png",
+    "more":true
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "title": "Traditional",
+    "image": "static/level3_Indian/traditional.jpg",
+    "more":false
+  },
+  {
+    "title": "South Indian",
+    "image": "static/level3_Indian/southindian.jpg",
+    "more":false
+  },
+  {
+    "title": "North Indian",
+    "image": "static/level3_Indian/northindian.jpeg",
+    "more":false
+  }
+]

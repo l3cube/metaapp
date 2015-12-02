@@ -1,0 +1,22 @@
+[
+  {
+    "title": "Indian",
+    "image": "static/level2_Food/indian.jpg",
+    "more":true
+  },
+  {
+    "title": "Chinese",
+    "image": "static/level2_Food/chinese.jpg",
+    "more":true
+  },
+  {
+    "title": "Italian",
+    "image": "static/level2_Food/italian.jpg",
+    "more":true
+  },
+  {
+    "title": "Junk",
+    "image": "static/level2_Food/junk.jpg",
+    "more":true
+  }
+]
