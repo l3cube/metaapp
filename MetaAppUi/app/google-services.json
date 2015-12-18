@@ -1,0 +1,51 @@
+{
+  "project_info": {
+    "project_id": "meta-app-e438b",
+    "project_number": "884066620206",
+    "name": "Meta-App"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:884066620206:android:df0a70fdac09b958",
+        "client_id": "android:com.pict.metaappui",
+        "client_type": 1,
+        "android_client_info": {
+          "package_name": "com.pict.metaappui"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "884066620206-qgrrt4q1bm0u7plo2c46gatmdoicq2ag.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pict.metaappui",
+            "certificate_hash": "C864A62FE8909DFD54AEC64F27ACC4F1D59B5451"
+          }
+        }
+      ],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "cloud_messaging_service": {
+          "status": 1,
+          "apns_config": []
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "google_signin_service": {
+          "status": 2
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "client_info": [],
+  "ARTIFACT_VERSION": "1"
+}
