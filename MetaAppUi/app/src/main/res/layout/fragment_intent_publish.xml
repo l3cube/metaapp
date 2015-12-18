@@ -3,10 +3,10 @@
     android:layout_height="match_parent" tools:context="com.pict.metaappui.ui.Intent_publish">
 
     <ScrollView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content">
     <RelativeLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content">
     <TextView
         android:layout_width="wrap_content"
@@ -57,12 +57,26 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="38dp" />
 
-    <DatePicker
+    <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/expiryDate"
+        android:inputType="date"
+        android:ems="10"
+        android:id="@+id/expiryDateText"
         android:layout_below="@+id/expiryLabel"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignStart="@+id/descriptionLabel"
+        android:text="Select Date"
+        android:layout_marginTop="38dp"
+        android:enabled="false"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Change Expiry Date"
+        android:id="@+id/expiryDateButton"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/expiryDateText"
+        android:layout_marginTop="38dp"/>
 
     <Button
         android:layout_width="wrap_content"
@@ -71,8 +85,9 @@
         android:id="@+id/publishButton"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/expiryDate"
+        android:layout_below="@id/expiryDateButton"
         android:layout_marginTop="38dp"/>
+
     </RelativeLayout>
     </ScrollView>
 </RelativeLayout>

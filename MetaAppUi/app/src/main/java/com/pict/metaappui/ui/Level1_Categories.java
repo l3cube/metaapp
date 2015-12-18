@@ -38,6 +38,7 @@ public class Level1_Categories extends Fragment {
     String level;
     String category;
     String endpoint;
+    String tlc;//Top level category
     RecyclerView mRecyclerView;
     RecyclerView.LayoutManager mLayoutManager;
     GridAdapter mAdapter;
@@ -56,6 +57,14 @@ public class Level1_Categories extends Fragment {
                              Bundle savedInstanceState) {
         level=Integer.toString(getArguments().getInt("Level"));
         category=getArguments().getString("Category");
+
+        if(getArguments().getInt("Level")==2){
+            tlc=category;
+        }
+        else{
+            tlc=getArguments().getString("TLC");
+        }
+
         endpoint="level"+level+"_"+category;
         View fragmentView=inflater.inflate(R.layout.fragment_level1_categories, container, false);
         return fragmentView;
@@ -86,6 +95,7 @@ public class Level1_Categories extends Fragment {
                     Bundle bundle = new Bundle();
                     bundle.putInt("Level", templevel);
                     bundle.putString("Category", itemSelected);
+                    bundle.putString("TLC", tlc);
                     Level1_Categories fragment = new Level1_Categories();
                     fragment.setArguments(bundle);
                     FragmentTransaction transaction = getFragmentManager().beginTransaction();
@@ -97,6 +107,7 @@ public class Level1_Categories extends Fragment {
                 else{
                     Bundle bundle=new Bundle();
                     bundle.putString("Category",itemSelected);
+                    bundle.putString("TLC", tlc);
                     Intent_publish fragment=new Intent_publish();
                     fragment.setArguments(bundle);
                     FragmentTransaction transaction = getFragmentManager().beginTransaction();
@@ -169,4 +180,5 @@ public class Level1_Categories extends Fragment {
             progressDialog = null;
         }
     }
+
 }
