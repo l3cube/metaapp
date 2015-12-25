@@ -2,45 +2,68 @@ from flask import Flask
 from flask import render_template
 from flask import request
 import json
-import sqlite3
-from contextlib import closing
-from flask import g
 from crypto import *
 from aes import AESCipher
+import zmq
+import time
+import requests
+from flask_sqlalchemy import SQLAlchemy
 
 # configuration
-DATABASE = '/tmp/MetaApp.db'
+DATABASE = 'sqlite:////tmp/MetaAppServer.db'
 DEBUG = True
-USERNAME = 'admin'
-PASSWORD = 'admin'
-
 privateKeyString = ''
+zmq_port = '5556'
+zmq_ip = '10.42.0.1'
 
 app = Flask(__name__)
-app.config.from_object(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE
+db = SQLAlchemy(app)
+context = zmq.Context()
+pubsocket = context.socket(zmq.PUB)
 
 
-def connect_db():
-    return sqlite3.connect(app.config['DATABASE'])
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.String(80), unique=True)
+    public_key = db.Column(db.Text)
+
+    def __init__(self, uuid, public_key):
+        self.uuid = uuid
+        self.public_key = public_key
+
+    def __repr__(self):
+        return '<User %r>' % self.uuid
 
 
-def init_db():
-    with closing(connect_db()) as db:
-        with app.open_resource('schema.sql', mode='r') as f:
-            db.cursor().executescript(f.read())
-        db.commit()
+class UserReq(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.String(80))
+    requestid = db.Column(db.String(80))
+    topic = db.Column(db.String(80))
+    message = db.Column(db.Text)
+
+    def __init__(self, uuid, requestid, topic, message):
+        self.uuid = uuid
+        self.requestid = requestid
+        self.topic = topic
+        self.message = message
+
+    def __repr__(self):
+        return '<User %r>' % self.uuid
 
 
-@app.before_request
-def before_request():
-    g.db = connect_db()
+def mogrify(topic, msg):
+    """ json encode the message and prepend the topic """
+    return topic + ' ' + json.dumps(msg)
 
 
-@app.teardown_request
-def teardown_request(exception):
-    db = getattr(g, 'db', None)
-    if db is not None:
-        db.close()
+def demogrify(topicmsg):
+    """ Inverse of mogrify() """
+    json0 = topicmsg.find('{')
+    topic = topicmsg[0:json0].strip()
+    msg = json.loads(topicmsg[json0:])
+    return topic, msg
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -48,8 +71,8 @@ def start():
     if request.method == 'POST':
         return reg_user(request.form['Message'], request.form['Seed'])
     else:
-        curr = g.db.execute('select id,uuid,public_key from users')
-        entries = [dict(id=row[0], uuid=row[1], public_key=row[2]) for row in curr.fetchall()]
+        curr = User.query.all()
+        entries = [dict(id=row.id, uuid=row.uuid, public_key=row.public_key) for row in curr]
         return render_template('display.html', entries=entries)
 
 
@@ -70,8 +93,9 @@ def reg_user(message, seed):
     public_key = d['Pubkey']
     print uuid
     print public_key
-    g.db.execute('insert into users (uuid,public_key) values (?, ?)', [uuid, public_key])
-    g.db.commit()
+    user = User(uuid,public_key)
+    db.session.add(user)
+    db.session.commit()
     return 'Client registered with uuid ' + uuid + ' and public key ' + public_key
 
 
@@ -80,30 +104,68 @@ def receive_msg():
     with open('private.pem', 'rb') as f:
         privateKeyString = f.read()
     privateKey = load_private_key_string(privateKeyString)
-    message = request.form['Message']
-    message = decrypt_message(privateKey, message)
-    print "Received :"+message
-    curr = g.db.execute('select public_key from users where uuid=8446992752')
-    row = curr.fetchone()
-    if row:
-        public_key_string = row[0]
-        public_key = load_public_key_string(public_key_string)
-        emessage = encrypt_message(public_key, message)
-        emessage = emessage.replace('+', '-')
-        emessage = emessage.replace('/', '_')
-        print "Encrypted Message:"
-        print emessage
-    return message
+    emessage = request.form['Message']
+    seed = request.form['Seed']
+    seed = decrypt_message(privateKey, seed)
+    emessage = emessage.replace('-', '+');
+    emessage = emessage.replace('_', '/');
+    print seed
+    print emessage
+    obj = AESCipher(seed)
+    finalmessage = obj.decrypt(emessage)
+
+    d = json.loads(finalmessage)
+    uuid = d['Uuid']
+    requestId = d['RequestId']
+    topic = d['Topic']
+    message = d['Message']
+
+    d1 = json.loads(message)
+    intent_description = d1['Intent_Description']
+    deadline = d1['Deadline']
+
+    print uuid
+    print requestId
+    print topic
+    print intent_description
+    print deadline
+    userreq = UserReq(uuid, requestId, topic, message)
+    db.session.add(userreq)
+    db.session.commit()
+    d2 = {}
+    d2['Uuid'] = uuid
+    d2['RequestId'] = requestId
+    d2['Topic'] = topic
+    d2['Deadline'] = deadline
+    result = requests.post('http://10.23.18.144:5000/receive/request/', data=json.dumps(d2))
+    print result
+    publish_msg(mogrify(topic, d))
+    return "Intent Published"
+
+
+def publish_msg(message):
+    url = 'tcp://'+zmq_ip+':'+zmq_port
+    print url
+    try:
+        pubsocket.bind(url)
+        time.sleep(1)
+        print "Sending message : "+message
+        pubsocket.send_string(message)
+    except Exception as e:
+        print "Error : "+str(e)
+    finally:
+        pubsocket.unbind(url)
 
 
 @app.route('/display/', methods=['GET'])
 def display():
     if request.method == 'GET':
-        curr = g.db.execute('select * from users')
-        entries = [dict(id=row[0], phone_number=row[1], msg=row[2], time=row[3], sender=row[4]) for row in
-                   curr.fetchall()]
+        curr = User.query.all()
+        entries = [dict(id=row.id, uuid=row.uuid, public_key=row.public_key) for row in curr]
         return render_template('display.html', entries=entries)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='10.42.0.1', debug=True)
+
+
