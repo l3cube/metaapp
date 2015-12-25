@@ -19,6 +19,8 @@ import android.widget.Toast;
 import com.pict.metaappui.R;
 import com.pict.metaappui.crypto.AESnew;
 import com.pict.metaappui.crypto.RSA;
+import com.pict.metaappui.modal.UserRequest;
+import com.pict.metaappui.util.DatabaseHelper;
 import com.pict.metaappui.util.Preferences;
 import com.pict.metaappui.util.postAsync;
 
@@ -52,6 +54,8 @@ public class Intent_publish extends Fragment {
     EditText descriptionText;
     EditText expiryDateText;
     Button expiryButton;
+
+    DatabaseHelper db;
 
     public Intent_publish() {
         // Required empty public constructor
@@ -151,6 +155,17 @@ public class Intent_publish extends Fragment {
         new postAsync("Publishing Intent...",getActivity()).execute("4", "Message", aesEncrptJstr, "Seed", rsaEncryptSeed, Preferences.url + "receive/");
         Log.i(TAG, "Publish intent");
 
+        //add to database
+        db=new DatabaseHelper(getActivity());
+        UserRequest obj=new UserRequest();
+        obj.setRequestId(Integer.parseInt(requestId));
+        obj.setTopic(tlc);
+        obj.setIntent_desc(description);
+        obj.setDeadline(deadline);
+        obj.setPending(true);
+        long id=db.createUserRequest(obj);
+        db.closeDB();
+        Log.i(TAG,"Entry made with id "+id);
         Preferences.putInteger(Preferences.REQUEST_ID,Integer.parseInt(requestId)+1);
     }
 

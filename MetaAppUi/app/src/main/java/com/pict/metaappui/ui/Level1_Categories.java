@@ -21,6 +21,7 @@ import com.pict.metaappui.R;
 import com.pict.metaappui.adapter.GridAdapter;
 import com.pict.metaappui.app.AppController;
 import com.pict.metaappui.modal.CategoryItem;
+import com.pict.metaappui.util.Preferences;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,7 +44,7 @@ public class Level1_Categories extends Fragment {
     RecyclerView.LayoutManager mLayoutManager;
     GridAdapter mAdapter;
     private static final String TAG="Level1_Categories";
-    private static final String url="http://10.42.0.1:5000/";
+    private static final String url= Preferences.url;
     private List<CategoryItem> mItems=new ArrayList<CategoryItem>();
     private ProgressDialog progressDialog;
 
