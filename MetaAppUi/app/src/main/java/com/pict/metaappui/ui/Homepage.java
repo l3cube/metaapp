@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -16,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.facebook.appevents.AppEventsLogger;
@@ -44,14 +44,15 @@ public class Homepage extends AppCompatActivity
     String userEmail;
     Uri userPhoto;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
         //set initial fragment
         Bundle bundle=new Bundle();
-        bundle.putString("Category","all");
-        bundle.putInt("Level",1);
+        bundle.putString("Category", "all");
+        bundle.putInt("Level", 1);
         bundle.putString("TLC", "null");
         Level1_Categories fragment = new Level1_Categories();
         fragment.setArguments(bundle);
@@ -61,15 +62,6 @@ public class Homepage extends AppCompatActivity
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -107,7 +99,7 @@ public class Homepage extends AppCompatActivity
         userProfileImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent loginIntent=new Intent(getApplicationContext(), Login.class);
+                Intent loginIntent = new Intent(getApplicationContext(), Login.class);
                 startActivity(loginIntent);
             }
         });
@@ -171,6 +163,11 @@ public class Homepage extends AppCompatActivity
             fragmentTransaction.commit();
 
         } else if (id == R.id.nav_namespace) {
+            //set initial fragment
+            Namespace fragment = new Namespace();
+            android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.fragment_container, fragment);
+            fragmentTransaction.commit();
 
         } else if (id == R.id.nav_about) {
 

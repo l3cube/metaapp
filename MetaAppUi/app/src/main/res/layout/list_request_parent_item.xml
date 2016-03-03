@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimary">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Topic Text"
+        android:id="@+id/topicText"
+        android:layout_alignParentTop="true"/>
+
+    <ImageButton
+        android:id="@+id/parent_list_item_expand_arrow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_margin="8dp"
+        android:src="@android:drawable/arrow_down_float" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Intent Text"
+        android:id="@+id/intentText"
+        android:layout_below="@+id/topicText"
+        android:layout_alignStart="@+id/topicText"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Deadline Text"
+        android:id="@+id/deadlineText"
+        android:layout_below="@+id/intentText"
+        android:layout_marginTop="8dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Change Deadline"
+        android:id="@+id/changeDeadlineButton"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/deadlineText"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="30dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Delete Request"
+        android:id="@+id/deleteRequestButton"
+        android:layout_alignTop="@+id/changeDeadlineButton"
+        android:layout_toEndOf="@+id/changeDeadlineButton"
+        android:layout_marginStart="10dp" />
+
+</RelativeLayout>

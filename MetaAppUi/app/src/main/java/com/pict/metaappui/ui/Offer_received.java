@@ -11,10 +11,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.pict.metaappui.R;
-import com.pict.metaappui.adapter.GridAdapter;
 import com.pict.metaappui.adapter.RequestListAdapter;
-import com.pict.metaappui.modal.FulfilledRequest;
-import com.pict.metaappui.modal.PendingRequest;
+import com.pict.metaappui.modal.RequestChild;
+import com.pict.metaappui.modal.RequestParent;
 import com.pict.metaappui.modal.UserRequest;
 import com.pict.metaappui.modal.UserResponses;
 import com.pict.metaappui.util.DatabaseHelper;
@@ -35,7 +34,7 @@ public class Offer_received extends Fragment {
     RecyclerView.LayoutManager mLayoutManager;
     RequestListAdapter mAdapter;
     private static final String TAG="Offer_received";
-    private List<Object> mItems=new ArrayList<Object>();
+    private List<RequestParent> mItems=new ArrayList<RequestParent>();
     private List<UserRequest> items;
     DatabaseHelper db;
 
@@ -65,20 +64,26 @@ public class Offer_received extends Fragment {
         db=new DatabaseHelper(getActivity());
         items=db.getAllUserRequests();
         mItems.clear();
-        PendingRequest pr;
-        FulfilledRequest fr;
+        RequestParent req;
+        RequestChild res;
         List<UserResponses> responses;
+        List<RequestChild> mResponses;
         int no_of_responses;
         for(UserRequest i : items){
             if(i.isPending()){
-                pr=new PendingRequest(i.getRequestId(),i.getTopic(),i.getIntent_desc(),i.getDeadline());
-                mItems.add(pr);
+                req=new RequestParent(i.getRequestId(),i.getTopic(),i.getIntent_desc(),i.getDeadline(),0,null);
+                mItems.add(req);
             }
             else{
+                mResponses=new ArrayList<RequestChild>();
                 responses=db.getUserResponses(i.getRequestId());
-                no_of_responses=responses.size();
-                fr=new FulfilledRequest(i.getRequestId(),i.getTopic(),i.getIntent_desc(),i.getDeadline(),no_of_responses,responses);
-                mItems.add(fr);
+                for(UserResponses r : responses){
+                    res=new RequestChild(r.getRequestId(),r.getTopic(),r.getService_desc(),r.getTime_to_complete(),r.getCost());
+                    mResponses.add(res);
+                }
+                no_of_responses=mResponses.size();
+                req=new RequestParent(i.getRequestId(),i.getTopic(),i.getIntent_desc(),i.getDeadline(),no_of_responses,mResponses);
+                mItems.add(req);
             }
         }
 
@@ -91,7 +96,16 @@ public class Offer_received extends Fragment {
         mLayoutManager=new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        mAdapter=new RequestListAdapter(mItems);
+        mAdapter=new RequestListAdapter(getActivity(),mItems);
+        mAdapter.onRestoreInstanceState(savedInstanceState);
+        //mAdapter.setCus
         mRecyclerView.setAdapter(mAdapter);
     }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mAdapter.onSaveInstanceState(outState);
+    }
+
 }

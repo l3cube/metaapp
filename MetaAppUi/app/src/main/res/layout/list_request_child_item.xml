@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorWhite">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Service Text"
+        android:id="@+id/serviceText"
+        android:layout_alignParentTop="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Cost Text"
+        android:id="@+id/costText"
+        android:layout_below="@+id/serviceText"
+        android:layout_alignStart="@+id/serviceText"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Time to Complete Text"
+        android:id="@+id/timeToCompleteText"
+        android:layout_below="@+id/costText"
+        android:layout_marginTop="8dp" />
+
+</RelativeLayout>

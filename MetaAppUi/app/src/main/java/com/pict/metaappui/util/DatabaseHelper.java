@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.pict.metaappui.modal.FileItem;
 import com.pict.metaappui.modal.UserRequest;
 import com.pict.metaappui.modal.UserResponses;
 
@@ -29,6 +30,8 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     // Table Names
     private static final String TABLE_USERREQUEST = "UserRequest";
     private static final String TABLE_USERRESPONSES = "UserResponses";
+    private static final String TABLE_USERFILES = "UserFiles";
+
 
     //Common column names
     private static final String KEY_ID = "id";
@@ -45,6 +48,15 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static final String KEY_COST = "Cost";
     private static final String KEY_TIMETOCOMPLETE = "TTC";
 
+    //UserFiles column names
+    private static final String KEY_NAME = "Name";
+    private static final String KEY_LOCATION = "Location";
+    private static final String KEY_FILETYPE = "FileType";
+    // Photos = 1
+    // Videos = 2
+    // Text = 3
+
+
     // Table Create Statements
     // No boolean datatype in sqlite so use integer with 0 as false and 1 as true
     private static final String CREATE_TABLE_USERREQUEST = "CREATE TABLE "
@@ -57,6 +69,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             + " INTEGER ," + KEY_TOPIC + " TEXT," + KEY_SERVICEDESC + " TEXT,"
             + KEY_TIMETOCOMPLETE + " DATETIME," + KEY_COST + " REAL" + ")";
 
+    private static final String CREATE_TABLE_USERFILES = "CREATE TABLE "
+            + TABLE_USERFILES + "(" + KEY_ID + " INTEGER PRIMARY KEY," + KEY_NAME
+            + " TEXT ," + KEY_LOCATION + " TEXT UNIQUE," +KEY_FILETYPE + " INTEGER" + ")";
+
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -67,12 +83,14 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE_USERREQUEST);
         db.execSQL(CREATE_TABLE_USERRESPONSES);
+        db.execSQL(CREATE_TABLE_USERFILES);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS "+TABLE_USERREQUEST);
         db.execSQL("DROP TABLE IF EXISTS "+TABLE_USERREQUEST);
+        db.execSQL("DROP TABLE IF EXISTS "+TABLE_USERFILES);
         onCreate(db);
 
     }
@@ -83,7 +101,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         ContentValues values=new ContentValues();
         values.put(KEY_REQUESTID,obj.getRequestId());
         values.put(KEY_TOPIC,obj.getTopic());
-        values.put(KEY_INTENTDESC,obj.getIntent_desc());
+        values.put(KEY_INTENTDESC, obj.getIntent_desc());
         values.put(KEY_DEADLINE, obj.getDeadline());
         if(obj.isPending())
             values.put(KEY_PENDING, 1);
@@ -186,6 +204,58 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         values.put(KEY_PENDING, 0);
         int noofrowsaffected=db.update(TABLE_USERREQUEST, values, KEY_REQUESTID + "=" + requestId, null);
         return noofrowsaffected;
+    }
+
+    public long createUserFiles(FileItem obj,String type){
+        int fileType = getFileType(type);
+        SQLiteDatabase db=this.getWritableDatabase();
+
+        ContentValues values=new ContentValues();
+        values.put(KEY_NAME,obj.getName());
+        values.put(KEY_LOCATION, obj.getLocation());
+        values.put(KEY_FILETYPE, fileType);
+        long id=db.insert(TABLE_USERFILES, null, values);
+        return id;
+    }
+
+    public int getFileType(String type){
+        if(type.equals("Photo"))
+            return 1;
+        else if(type.equals("Video"))
+            return 2;
+        else if(type.equals("Text Files"))
+            return 3;
+        else
+            return -1;
+    }
+
+    public List<FileItem> getAllUserFiles(String type){
+        int fileType = getFileType(type);
+        SQLiteDatabase db=this.getReadableDatabase();
+        String select_query="SELECT * FROM "+TABLE_USERFILES+" WHERE "+KEY_FILETYPE+" = "+fileType;
+        Log.i(LOG, select_query);
+
+        List<FileItem> list=new ArrayList<FileItem>();
+        Cursor c=db.rawQuery(select_query, null);
+
+        if(c.moveToFirst()) {
+            do {
+                FileItem obj = new FileItem();
+                obj.setName(c.getString(c.getColumnIndex(KEY_NAME)));
+                obj.setLocation(c.getString(c.getColumnIndex(KEY_LOCATION)));
+                obj.setIsChecked(false);
+                list.add(obj);
+            }while (c.moveToNext());
+        }
+        return list;
+    }
+
+    public boolean deleteFile(String location){
+        SQLiteDatabase db = this.getWritableDatabase();
+        int count = db.delete(TABLE_USERFILES,KEY_LOCATION + " = ?",new String[]{ location });
+        if(count==1)
+            return true;
+        return false;
     }
 
     public void closeDB() {

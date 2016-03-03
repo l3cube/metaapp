@@ -23,12 +23,13 @@ class UserRequests(db.Model):
         self.topic = topic
 
     def __repr__(self):
-        return '<Requests %r>' % self.token_id
+        return '<Requests %r>' % self.uuid
 
 
 class UserResponses(db.Model):
-    uuid = db.Column(db.String(200), primary_key=True)
-    reqid = db.Column(db.String(200), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.String(200))
+    reqid = db.Column(db.String(200))
     topic = db.Column(db.String(200))
     Offer = db.Column(db.Text)
     sent = db.Column(db.Boolean)
@@ -41,7 +42,7 @@ class UserResponses(db.Model):
         self.sent = sent
 
     def __repr__(self):
-        return '<Responses %r>' % self.token_id
+        return '<Responses %r>' % self.uuid
 
 
 @app.route('/receive/request/', methods=['POST'])
@@ -71,7 +72,10 @@ def receive_offer():
         if invalidate(uuid, reqid, topic, offer):
             new_entry = UserResponses(uuid, reqid, topic, offer, False)
             db.session.add(new_entry)
+            print 'ok'
             db.session.commit()
+            print 'ok'
+            return 'Offer received', 200
 
 
 def invalidate(user_id, req_id, topic, offer):
@@ -105,4 +109,4 @@ def send_offer():
 
 
 if __name__ == '__main__':
-    app.run(host='10.23.18.144', debug=True)
+    app.run(host='192.168.43.81', port=5000)

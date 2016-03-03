@@ -137,7 +137,7 @@ def receive_msg():
     d2['RequestId'] = requestId
     d2['Topic'] = topic
     d2['Deadline'] = deadline
-    result = requests.post('http://10.23.18.144:5000/receive/request/', data=json.dumps(d2))
+    result = requests.post('http://10.42.0.1:5001/receive/request/', data=json.dumps(d2))
     print result
     publish_msg(mogrify(topic, d))
     return "Intent Published"
@@ -166,6 +166,6 @@ def display():
 
 
 if __name__ == '__main__':
-    app.run(host='10.42.0.1', debug=True)
+    app.run(host='10.42.0.1', port=5000)
 
 

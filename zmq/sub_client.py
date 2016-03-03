@@ -26,18 +26,16 @@ if len(sys.argv) > 2:
 context = zmq.Context()
 socket = context.socket(zmq.SUB)
 
-print "Collecting updates from weather server..."
-socket.connect ("tcp://10.42.0.40:%s" % port)
+socket.connect ("tcp://10.42.0.1:%s" % port)
 
 if len(sys.argv) > 2:
     socket.connect ("tcp://localhost:%s" % port1)
-# Subscribe to category 
+# Subscribe to category
+
 topicfilter = "clothes"
 socket.setsockopt(zmq.SUBSCRIBE, topicfilter)
 
-# Process 5 updates
-total_value = 0
-for update_nbr in range (5):
+while True:
     string = socket.recv()
     topic, messagedata = demogrify(string)
     print topic, messagedata

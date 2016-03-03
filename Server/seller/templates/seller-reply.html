@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seller-Reply</title>
+</head>
+<body>
+
+<form action="/respond/" method="post">
+Request:<br>
+<select name="request">
+{% for entry in entries %}
+	<option value={{  }}> {{ entry.phone_number +"-"+ entry.token}} </option>
+{% endfor %}
+</select>
+<br>
+Title:<br>
+<input type="text" name="title">
+<br>
+Message:<br>
+<input type="text" name="message">
+<br>
+<input type="submit" value="Submit">
+</form>
+
+</body>
+</html>
+
+ <!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+</head>
+<body>
+
+<h1>MetAPIs</h1>
+<table id="mytable" style="width:100%">
+    <tr>
+        <th>Uuid</th>
+        <th>Reqid</th>
+        <th>Deadline</th>
+        <th>Topic</th>
+    </tr>
+    {% for entry in entries %}
+    <tr>
+        <td>{{ entry.uuid }}</td>
+        <td>{{ entry.reqid }}</td>
+        <td>{{ entry.deadline }}</td>
+        <td>{{ entry.topic }}</td>
+    </tr>
+    {% else %}
+    <tr>
+        <td>-</td>
+        <td>-</td>
+        <td>-</td>
+        <td>-</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

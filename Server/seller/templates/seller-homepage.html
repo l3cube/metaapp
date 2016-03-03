@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Welcome!!!</title>
+
+    <!-- Bootstrap -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <table class="table table-hover">
+        <tr>
+            <th>Uuid</th>
+            <th>Request Id</th>
+            <th>Deadline</th>
+            <th>Topic</th>
+            <th>Respond</th>
+        </tr>
+        {% for entry in entries %}
+        <tr>
+            <td>{{ entry.uuid }}</td>
+            <td>{{ entry.reqid }}</td>
+            <td>{{ entry.deadline }}</td>
+            <td>{{ entry.topic }}</td>
+            <td><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#respondModal"
+                        data-uuid="{{ entry.uuid }}" data-requestid="{{ entry.reqid }}" data-topic="{{ entry.topic }}"
+                        data-intentdesc="{{ entry.intentdesc }}">Respond</button>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="modal fade" id="respondModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+      <div class="modal-dialog" role="document">
+        <form class="modal-content" action="/respond/" method="post">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="exampleModalLabel">New Response</h4>
+          </div>
+          <div class="modal-body">
+              <div class="form-group1">
+                <label for="uuid" class="control-label">UUID:</label>
+                <input type="text" class="form-control" id="uuid" name="uuid" readonly>
+              </div>
+              <div class="form-group2">
+                <label for="requestid" class="control-label">Request ID:</label>
+                <input type="text" class="form-control" id="requestid" name="requestid" readonly>
+              </div>
+              <div class="form-group3">
+                <label for="topic" class="control-label">Topic:</label>
+                <input type="text" class="form-control" id="topic" name="topic" readonly>
+              </div>
+              <div class="form-group4">
+                <label for="intentdesc" class="control-label">Intent Description:</label>
+                <textarea class="form-control" id="intentdesc" name="intentdesc" readonly></textarea>
+              </div>
+              <div class="form-group5">
+                <label for="servicedesc" class="control-label">Service Description:</label>
+                <textarea class="form-control" id="servicedesc" name="servicedesc" required></textarea>
+              </div>
+              <div class="form-group6">
+                <label for="cost" class="control-label">Cost:</label>
+                <input type="text" class="form-control" id="cost" name="cost" required>
+              </div>
+              <div class="form-group7">
+                <label for="ttc" class="control-label">Time to Complete:</label>
+                <input type="text" class="form-control" id="ttc" name="ttc" required>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Send Response</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script>
+        $('#respondModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        var uuid_value = button.data('uuid') // Extract info from data-* attributes
+        var request_val = button.data('requestid')
+        var topic_value = button.data('topic')
+        var intentdesc_value = button.data('intentdesc')
+        // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+        // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+        var modal = $(this)
+        modal.find('.modal-body .form-group1 input').val(uuid_value)
+        modal.find('.modal-body .form-group2 input').val(request_val)
+        modal.find('.modal-body .form-group3 input').val(topic_value)
+        modal.find('.modal-body .form-group4 textarea').val(intentdesc_value)
+        })
+    </script>
+
+  </body>
+</html>
