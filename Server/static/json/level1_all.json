@@ -17,6 +17,6 @@
   {
     "title": "Taxi",
     "image": "static/level1_all/taxi.png",
-    "more":true
+    "more":false
   }
 ]

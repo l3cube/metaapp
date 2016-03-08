@@ -4,11 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.LinearLayoutManager;
@@ -64,6 +66,8 @@ public class Namespace_content extends AppCompatActivity implements View.OnClick
     FloatingActionMenu mFABMenu;
     private static final String TAG_ADD_FILE = "AddFile";
     private static final String TAG_REMOVE_FILE = "RemoveFile";
+    private static final int TAG_FILE_ACTION = 1;
+    private static final int TAG_CONTACT_ACTION = 2;
 
     //Multiselector for Recyclerview
     private MultiSelector mMultiSelector = new MultiSelector();
@@ -82,11 +86,16 @@ public class Namespace_content extends AppCompatActivity implements View.OnClick
                 // not after. No idea why, but it crashes.
                 actionMode.finish();
                 db = new DatabaseHelper(getApplicationContext());
-
+                boolean ret=false;
                 for (int i = mItems.size(); i >= 0; i--) {
                     if (mMultiSelector.isSelected(i, 0)) {
                         FileItem item = mItems.get(i);
-                        boolean ret = db.deleteFile(item.getLocation());
+
+                        if(contentType.equals("Photo") || contentType.equals("Video") || contentType.equals("Text Files"))
+                            ret = db.deleteFile(item.getLocation());
+                        if(contentType.equals("Contacts"))
+                            ret = db.deleteContact(item.getName());
+
                         Log.i(TAG,"Return value from delete "+ ret);
                         mItems.remove(item);
                         mRecyclerView.getAdapter().notifyItemRemoved(i);
@@ -166,11 +175,16 @@ public class Namespace_content extends AppCompatActivity implements View.OnClick
         intent = getIntent();
         contentType = intent.getStringExtra("ContentType");
         pattern = intent.getStringExtra("Pattern");
-        Log.i(TAG,"ContentType: "+contentType+" Pattern: "+pattern);
+        Log.i(TAG, "ContentType: " + contentType + " Pattern: " + pattern);
         mItems.clear();
         //Do db fetch and store in mItems
         db=new DatabaseHelper(this);
-        mItems = db.getAllUserFiles(contentType);
+
+        if(contentType.equals("Photo") || contentType.equals("Video") || contentType.equals("Text Files"))
+            mItems = db.getAllUserFiles(contentType);
+        if(contentType.equals("Contacts"))
+            mItems = db.getAllUserContacts();
+
         db.closeDB();
         Log.i(TAG, "List with items " + mItems.size());
         Toast.makeText(this, "Content Type : " + contentType, Toast.LENGTH_LONG).show();
@@ -197,12 +211,20 @@ public class Namespace_content extends AppCompatActivity implements View.OnClick
 
     @Override
     public void onClick(View v) {
+        Log.i(TAG,contentType);
         if(v.getTag().equals(TAG_ADD_FILE)){
-            Toast.makeText(getApplicationContext(), "Add File", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(getApplicationContext(), FilePickerActivity.class);
-            intent.putExtra(FilePickerActivity.ARG_FILE_FILTER, Pattern.compile(pattern));
-            intent.putExtra(FilePickerActivity.ARG_DIRECTORIES_FILTER, false);
-            startActivityForResult(intent, 1);
+            if(contentType.equals("Photo") || contentType.equals("Video") || contentType.equals("Text Files")) {
+                Toast.makeText(getApplicationContext(), "Add File", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getApplicationContext(), FilePickerActivity.class);
+                intent.putExtra(FilePickerActivity.ARG_FILE_FILTER, Pattern.compile(pattern));
+                intent.putExtra(FilePickerActivity.ARG_DIRECTORIES_FILTER, false);
+                startActivityForResult(intent, TAG_FILE_ACTION);
+            }
+            if(contentType.equals("Contacts")){
+                Toast.makeText(getApplicationContext(), "Add Contact", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+                startActivityForResult(intent, TAG_CONTACT_ACTION);
+            }
         }
         else if(v.getTag().equals(TAG_REMOVE_FILE)){
             Toast.makeText(getApplicationContext(),"Remove File", Toast.LENGTH_SHORT).show();
@@ -213,8 +235,9 @@ public class Namespace_content extends AppCompatActivity implements View.OnClick
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        long new_id;
 
-        if (requestCode == 1 && resultCode == RESULT_OK) {
+        if (requestCode == TAG_FILE_ACTION && resultCode == RESULT_OK) {
             String filePath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
             Log.i(TAG,"Result from filechooser: "+filePath);
             File f = new File(filePath);
@@ -222,8 +245,8 @@ public class Namespace_content extends AppCompatActivity implements View.OnClick
             obj.setName(f.getName());
             obj.setLocation(f.getAbsolutePath());
             db = new DatabaseHelper(this);
-            long id = db.createUserFiles(obj, contentType);
-            if(id==-1)
+            new_id = db.createUserFiles(obj, contentType);
+            if(new_id==-1)
             {
                 Toast.makeText(getApplicationContext(),"File already exists", Toast.LENGTH_SHORT).show();
                 db.closeDB();
@@ -232,8 +255,46 @@ public class Namespace_content extends AppCompatActivity implements View.OnClick
             mItems = db.getAllUserFiles(contentType);
             mAdapter.swap(mItems);
             db.closeDB();
-            Toast.makeText(getApplicationContext(),"File Added Successfully with id: "+id, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(),"File Added Successfully with id: "+new_id, Toast.LENGTH_SHORT).show();
 
+        }
+
+        if(requestCode == TAG_CONTACT_ACTION && resultCode == RESULT_OK){
+            String cName="";
+            String cNumber="";
+            Uri contactData = data.getData();
+            Cursor c =  managedQuery(contactData, null, null, null, null);
+            if (c.moveToFirst()) {
+                String id =c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts._ID));
+                String hasPhone =c.getString(c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER));
+                if (hasPhone.equalsIgnoreCase("1")) {
+                    Cursor phones = getContentResolver().query(
+                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = "+ id,
+                            null, null);
+                    phones.moveToFirst();
+                    cNumber = phones.getString(phones.getColumnIndex("data1"));
+                    phones.close();
+                }
+                cName = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                c.close();
+                Log.i(TAG,"Contact Name: "+cName+" and Number: "+cNumber);
+                FileItem obj=new FileItem();
+                obj.setName(cName);
+                obj.setLocation(cNumber);
+                db = new DatabaseHelper(this);
+                new_id = db.createUserContact(obj);
+                if(new_id==-1)
+                {
+                    Toast.makeText(getApplicationContext(),"Contact already exists", Toast.LENGTH_SHORT).show();
+                    db.closeDB();
+                    return;
+                }
+                mItems = db.getAllUserContacts();
+                mAdapter.swap(mItems);
+                db.closeDB();
+                Toast.makeText(getApplicationContext(),"Contact Added Successfully with id: "+new_id, Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -294,7 +355,10 @@ public class Namespace_content extends AppCompatActivity implements View.OnClick
         @Override
         public void onBindViewHolder(final ViewHolder viewHolder, final int i) {
             final FileItem item = mItems.get(i);
-            viewHolder.namelabel.setText(item.getName());
+            if(contentType.equals("Contacts"))
+                viewHolder.namelabel.setText(item.getName()+"("+item.getLocation()+")");
+            else
+                viewHolder.namelabel.setText(item.getName());
             viewHolder.location = item.getLocation();
             updateCheckedState(viewHolder,item.isChecked());
             viewHolder.imageView.setOnClickListener(new View.OnClickListener() {

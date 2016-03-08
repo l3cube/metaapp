@@ -31,6 +31,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static final String TABLE_USERREQUEST = "UserRequest";
     private static final String TABLE_USERRESPONSES = "UserResponses";
     private static final String TABLE_USERFILES = "UserFiles";
+    private static final String TABLE_USERCONTACTS = "UserContacts";
 
 
     //Common column names
@@ -56,6 +57,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     // Videos = 2
     // Text = 3
 
+    //UserContacts column names
+    private static final String KEY_CNAME = "CName";
+    private static final String KEY_CNUMBER = "CNumber";
+
 
     // Table Create Statements
     // No boolean datatype in sqlite so use integer with 0 as false and 1 as true
@@ -73,6 +78,10 @@ public class DatabaseHelper extends SQLiteOpenHelper{
             + TABLE_USERFILES + "(" + KEY_ID + " INTEGER PRIMARY KEY," + KEY_NAME
             + " TEXT ," + KEY_LOCATION + " TEXT UNIQUE," +KEY_FILETYPE + " INTEGER" + ")";
 
+    private static final String CREATE_TABLE_USERCONTACTS = "CREATE TABLE "
+            + TABLE_USERCONTACTS + "(" + KEY_ID + " INTEGER PRIMARY KEY," + KEY_CNAME
+            + " TEXT UNIQUE," + KEY_CNUMBER + " TEXT" + ")";
+
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -84,6 +93,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         db.execSQL(CREATE_TABLE_USERREQUEST);
         db.execSQL(CREATE_TABLE_USERRESPONSES);
         db.execSQL(CREATE_TABLE_USERFILES);
+        db.execSQL(CREATE_TABLE_USERCONTACTS);
     }
 
     @Override
@@ -91,6 +101,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         db.execSQL("DROP TABLE IF EXISTS "+TABLE_USERREQUEST);
         db.execSQL("DROP TABLE IF EXISTS "+TABLE_USERREQUEST);
         db.execSQL("DROP TABLE IF EXISTS "+TABLE_USERFILES);
+        db.execSQL("DROP TABLE IF EXISTS "+TABLE_USERCONTACTS);
         onCreate(db);
 
     }
@@ -100,7 +111,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
         ContentValues values=new ContentValues();
         values.put(KEY_REQUESTID,obj.getRequestId());
-        values.put(KEY_TOPIC,obj.getTopic());
+        values.put(KEY_TOPIC, obj.getTopic());
         values.put(KEY_INTENTDESC, obj.getIntent_desc());
         values.put(KEY_DEADLINE, obj.getDeadline());
         if(obj.isPending())
@@ -252,7 +263,45 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 
     public boolean deleteFile(String location){
         SQLiteDatabase db = this.getWritableDatabase();
-        int count = db.delete(TABLE_USERFILES,KEY_LOCATION + " = ?",new String[]{ location });
+        int count = db.delete(TABLE_USERFILES, KEY_LOCATION + " = ?", new String[]{location});
+        if(count==1)
+            return true;
+        return false;
+    }
+
+    public long createUserContact(FileItem obj){
+        SQLiteDatabase db=this.getWritableDatabase();
+
+        ContentValues values=new ContentValues();
+        values.put(KEY_CNAME,obj.getName());
+        values.put(KEY_CNUMBER, obj.getLocation());
+        long id=db.insert(TABLE_USERCONTACTS, null, values);
+        return id;
+    }
+
+    public List<FileItem> getAllUserContacts(){
+        SQLiteDatabase db=this.getReadableDatabase();
+        String select_query="SELECT * FROM "+TABLE_USERCONTACTS;
+        Log.i(LOG, select_query);
+
+        List<FileItem> list=new ArrayList<FileItem>();
+        Cursor c=db.rawQuery(select_query, null);
+
+        if(c.moveToFirst()) {
+            do {
+                FileItem obj = new FileItem();
+                obj.setName(c.getString(c.getColumnIndex(KEY_CNAME)));
+                obj.setLocation(c.getString(c.getColumnIndex(KEY_CNUMBER)));
+                obj.setIsChecked(false);
+                list.add(obj);
+            }while (c.moveToNext());
+        }
+        return list;
+    }
+
+    public boolean deleteContact(String cName){
+        SQLiteDatabase db = this.getWritableDatabase();
+        int count = db.delete(TABLE_USERCONTACTS,KEY_CNAME + " = ?",new String[]{ cName });
         if(count==1)
             return true;
         return false;

@@ -8,6 +8,7 @@ import zmq
 import time
 import requests
 from flask_sqlalchemy import SQLAlchemy
+import uuid
 
 # configuration
 DATABASE = 'sqlite:////tmp/MetaAppServer.db'
@@ -24,9 +25,9 @@ pubsocket = context.socket(zmq.PUB)
 
 
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.String(80), unique=True)
-    public_key = db.Column(db.Text)
+    id = db.            Column(db.Integer, primary_key=True)
+    uuid = db.Column(db.Text, unique=True)
+    public_key = db.Column(db.Text)             #Actually the Aes seed
 
     def __init__(self, uuid, public_key):
         self.uuid = uuid
@@ -38,7 +39,7 @@ class User(db.Model):
 
 class UserReq(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.String(80))
+    uuid = db.Column(db.Text)
     requestid = db.Column(db.String(80))
     topic = db.Column(db.String(80))
     message = db.Column(db.Text)
@@ -69,34 +70,35 @@ def demogrify(topicmsg):
 @app.route('/', methods=['POST', 'GET'])
 def start():
     if request.method == 'POST':
-        return reg_user(request.form['Message'], request.form['Seed'])
+        return reg_user(request.form['Message'])
     else:
         curr = User.query.all()
         entries = [dict(id=row.id, uuid=row.uuid, public_key=row.public_key) for row in curr]
         return render_template('display.html', entries=entries)
 
 
-def reg_user(message, seed):
+def reg_user(message):
     with open('private.pem', 'rb') as f:
         privateKeyString = f.read()
     privateKey = load_private_key_string(privateKeyString)
-    seed = decrypt_message(privateKey, seed)
+    message = decrypt_message(privateKey, message)
     message = message.replace('-', '+');
     message = message.replace('_', '/');
-    print seed
     print message
-    obj = AESCipher(seed)
-    message = obj.decrypt(message)
-
     d = json.loads(message)
-    uuid = d['UUID']
-    public_key = d['Pubkey']
-    print uuid
-    print public_key
-    user = User(uuid,public_key)
+    aes_seed = d['AesSeed']
+    Uuid = uuid.uuid1().hex
+    print Uuid
+    print aes_seed
+    user = User(Uuid, aes_seed)
+    print 'ok'
     db.session.add(user)
     db.session.commit()
-    return 'Client registered with uuid ' + uuid + ' and public key ' + public_key
+    print 'ok'
+    d1 = {}
+    d1['Uuid'] = Uuid
+    print d1
+    return json.dumps(d1)
 
 
 @app.route('/receive/', methods=['POST'])
@@ -155,6 +157,28 @@ def publish_msg(message):
         print "Error : "+str(e)
     finally:
         pubsocket.unbind(url)
+
+
+@app.route('/session/update', methods=['POST'])
+def session_update():
+    if request.method == 'POST':
+        message = request.form['Message']
+        with open('private.pem', 'rb') as f:
+            privateKeyString = f.read()
+        privateKey = load_private_key_string(privateKeyString)
+        message = decrypt_message(privateKey, message)
+        message = message.replace('-', '+')
+        message = message.replace('_', '/')
+        print message
+        d = json.loads(message)
+        Uuid = d['Uuid']
+        aes_seed = d['AesSeed']
+        user = User(Uuid, aes_seed)
+        db.session.add(user)
+        db.session.commit()
+        return "Session updated"
+
+
 
 
 @app.route('/display/', methods=['GET'])

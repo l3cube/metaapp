@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class Preferences {
-    public static final String url="http://192.168.43.18:5000/";
-    public static final String proxyurl="http://192.168.43.81:5000/";
+    public static final String url="http://10.42.0.1:5000/";
+    public static final String proxyurl="http://10.42.0.1:5000/";
     public static final String SHARED_PREFERENCES = "SHARED_PREFERENCES";
     public static final String RSA_GENERATED = "RSA_GENERATED";
     public static final String RSA_PUBLIC_KEY = "RSA_PUBLIC_KEY";
@@ -23,6 +23,10 @@ public class Preferences {
     public static final String IS_REGISTERED="registered";
     public static final String PHONE_NUMBER="number";
     public static final String REQUEST_ID="reqid";
+    public static final String SESSION_EXPIRY="session_expiry";
+    public static final String AES_SEED="aes_seed";
+    public static final String SHOW_INTRO="show_intro";
+
     public static String SERVER_PUB_KEY="";
 
     //Login user deatils

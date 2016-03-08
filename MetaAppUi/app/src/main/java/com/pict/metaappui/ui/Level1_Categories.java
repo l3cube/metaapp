@@ -106,15 +106,24 @@ public class Level1_Categories extends Fragment {
                     transaction.commit();
                 }
                 else{
-                    Bundle bundle=new Bundle();
-                    bundle.putString("Category",itemSelected);
-                    bundle.putString("TLC", tlc);
-                    Intent_publish fragment=new Intent_publish();
-                    fragment.setArguments(bundle);
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                    transaction.replace(R.id.fragment_container, fragment);
-                    transaction.addToBackStack(null);
-                    transaction.commit();
+                    if(itemSelected.equals("Taxi")){
+                        TaxiLocation fragment = new TaxiLocation();
+                        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                        transaction.replace(R.id.fragment_container, fragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                    }
+                    else {
+                        Bundle bundle = new Bundle();
+                        bundle.putString("Category", itemSelected);
+                        bundle.putString("TLC", tlc);
+                        Intent_publish fragment = new Intent_publish();
+                        fragment.setArguments(bundle);
+                        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                        transaction.replace(R.id.fragment_container, fragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                    }
                 }
             }
         });

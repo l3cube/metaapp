@@ -15,34 +15,62 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import org.json.JSONObject;
 
 import java.security.KeyPair;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 import com.pict.metaappui.R;
-import com.pict.metaappui.crypto.Crypto;
 import com.pict.metaappui.crypto.RSA;
 import com.pict.metaappui.util.Preferences;
+import com.pict.metaappui.util.RandomString;
 import com.pict.metaappui.util.postAsync;
-import com.pict.metaappui.crypto.AESnew;
+import com.pict.metaappui.util.postAsync1;
 
 public class Registration extends AppCompatActivity {
-    private EditText phonenumberedittext;
-    private Button registerbutton;
     private boolean isregistered;
-    private String number;
     private static final String TAG="Registration";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-    private Toolbar toolbar;
+    private String aes_seed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_registration);
         Preferences.init(this);
         //Check for one-time registration and then inflate the activity..
         isregistered = Preferences.getBoolean(Preferences.IS_REGISTERED);
+        DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
         Log.i(TAG, "Value of isregistered " + isregistered);
         if (checkPlayServices()) {
-            // Start IntentService to register this application with GCM.
             if(isregistered)
             {
+                String session_expiry_str = Preferences.getString((Preferences.SESSION_EXPIRY));
+                Date session_expiry,today;
+                try {
+                    session_expiry = formatter.parse(session_expiry_str);
+                    today = Calendar.getInstance().getTime();
+                    Log.i(TAG,"Todays date : "+formatter.format(today));
+                    Log.i(TAG,"Session expiry date : "+session_expiry_str);
+                    if(today.before(session_expiry)){
+                        Log.i(TAG,"Session not expired yet!!!");
+                    }
+                    else {
+                        //Generate AES random seed and post it to server
+                        Log.i(TAG, "Session expired!!!");
+                        Calendar c = Calendar.getInstance();
+                        c.setTime(today);
+                        c.add(Calendar.DATE,10);
+                        Date new_expiry = c.getTime();
+                        Preferences.putString(Preferences.SESSION_EXPIRY, formatter.format(new_expiry));
+                        genkey();
+                        sendSessionInfo();
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
                 Intent mainintent=new Intent(this,Homepage.class);
                 startActivity(mainintent);
                 Toast.makeText(getApplicationContext(), "User already registered!!!", Toast.LENGTH_SHORT).show();
@@ -50,23 +78,20 @@ public class Registration extends AppCompatActivity {
             }
             else
             {
-                setContentView(R.layout.activity_registration);
-                phonenumberedittext=(EditText)findViewById(R.id.phonenumberedittext);
-                registerbutton=(Button)findViewById(R.id.registerbutton);
-                registerbutton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        number = phonenumberedittext.getText().toString();
-                        Preferences.putString(Preferences.PHONE_NUMBER, number);
-                        Preferences.putInteger(Preferences.REQUEST_ID,1);
-                        Preferences.putBoolean(Preferences.IS_REGISTERED, true);
-                        genkey();
-                        sendcred();
-                        Intent mainintent = new Intent(getApplicationContext(), Homepage.class);
-                        startActivity(mainintent);
-                        Toast.makeText(getApplicationContext(), "User successfully registered!!!", Toast.LENGTH_SHORT).show();
-                    }
-                });
+
+                Calendar c = Calendar.getInstance();
+                c.setTime(c.getTime());
+                c.add(Calendar.DATE, 10);
+                Date new_expiry = c.getTime();
+                Preferences.putString(Preferences.SESSION_EXPIRY, formatter.format(new_expiry));
+                Preferences.putInteger(Preferences.REQUEST_ID, 1);
+                Preferences.putBoolean(Preferences.IS_REGISTERED, true);
+                Log.i(TAG,"Session expiry set to: "+Preferences.getString(Preferences.SESSION_EXPIRY));
+                genkey();
+                sendCredInfo();
+                Intent mainintent = new Intent(getApplicationContext(), Homepage.class);
+                startActivity(mainintent);
+                Toast.makeText(getApplicationContext(), "User successfully registered!!!", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -88,39 +113,34 @@ public class Registration extends AppCompatActivity {
     }
 
     private void genkey(){
+        /*
+        To generate RSA Keypais but not required now
         final KeyPair kp= RSA.generate();
         Crypto.writePublicKeyToPreferences(kp);
         Crypto.writePrivateKeyToPreferences(kp);
         Log.i(TAG, "Keypair generated");
-        Log.i(TAG,"Private Key:"+Preferences.getString(Preferences.RSA_PUBLIC_KEY));
-        Log.i(TAG,"Private Key:"+Preferences.getString(Preferences.RSA_PRIVATE_KEY));
+        Log.i(TAG, "Private Key:" + Preferences.getString(Preferences.RSA_PUBLIC_KEY));
+        Log.i(TAG, "Private Key:" + Preferences.getString(Preferences.RSA_PRIVATE_KEY));
+        */
+        RandomString rs=new RandomString(10);
+        aes_seed = rs.nextString();
+        Preferences.putString(Preferences.AES_SEED, aes_seed);
+        Log.i(TAG,"AES Seed:"+Preferences.getString(Preferences.AES_SEED));
 
     }
 
-    private void sendcred()
+    private void sendCredInfo()
     {
         try {
-            String pubKey=Preferences.getString(Preferences.RSA_PUBLIC_KEY);
             JSONObject jobj = new JSONObject();
-            jobj.accumulate("Pubkey", pubKey);
-            jobj.accumulate("UUID", number);
+            jobj.accumulate("AesSeed", aes_seed);
             String jstr;
             jstr=jobj.toString();
             Log.i(TAG, jstr);
-            String seed="Aes seed value";
-            String aesEncrptJstr= AESnew.getInstance().encrypt_string(jstr);
-            Log.i(TAG, "Encrpyted Message:" + aesEncrptJstr);
-            Log.i(TAG,"Length:"+aesEncrptJstr.length());
-            //Log.i(TAG,"SP:"+Preferences.getString(Preferences.RSA_PUBLIC_KEY));
-            //Log.i(TAG,"TF:"+Preferences.SERVER_PUB_KEY);
-            String rsaEncryptSeed=RSA.encryptWithKey(Preferences.SERVER_PUB_KEY, seed);
+            String rsaEncryptSeed=RSA.encryptWithKey(Preferences.SERVER_PUB_KEY, jstr);
             //Log.i(TAG, "Encrpted Seed:" + rsaEncryptSeed);
-            JSONObject sendJson=new JSONObject();
-            sendJson.accumulate("Message",aesEncrptJstr);
-            sendJson.accumulate("Seed", rsaEncryptSeed);
-            String sendStr=sendJson.toString();
-            Log.i(TAG, "Final Message:" + sendStr);
-            new postAsync("Registration...",this).execute("4","Message",aesEncrptJstr,"Seed", rsaEncryptSeed, Preferences.url);
+            Log.i(TAG, "Message :" + rsaEncryptSeed);
+            new postAsync1("Registration...",this).execute("2","Message",rsaEncryptSeed, Preferences.url);
             Log.i(TAG,"Sent cred");
             /*
             Decode Code
@@ -134,6 +154,27 @@ public class Registration extends AppCompatActivity {
             String djstr=AESCrypt.decrypt(seed,encrptedmessage);
             Log.i(TAG,"Decrypted Message:"+djstr);
             */
+        }
+        catch (Exception e)
+        {
+            Log.i(TAG,e.toString());
+            e.printStackTrace();
+        }
+    }
+
+    private void sendSessionInfo()
+    {
+        try {
+            JSONObject jobj = new JSONObject();
+            jobj.accumulate("AesSeed", aes_seed);
+            jobj.accumulate("Uuid", Preferences.getString(Preferences.PHONE_NUMBER));
+            String jstr;
+            jstr=jobj.toString();
+            Log.i(TAG, jstr);
+            String rsaEncryptMsg=RSA.encryptWithKey(Preferences.SERVER_PUB_KEY, jstr);
+            Log.i(TAG, "Message :" + rsaEncryptMsg);
+            new postAsync("Loading...",this).execute("2","Message",rsaEncryptMsg, Preferences.url+"session/update");
+            Log.i(TAG,"Sent cred");
         }
         catch (Exception e)
         {
