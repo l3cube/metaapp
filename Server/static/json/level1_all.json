@@ -11,7 +11,27 @@
   },
   {
     "title": "Food",
-    "image": "static/level1_all/food.png",
+    "image": "static/level1_all/food.jpg",
+    "more":true
+  },
+  {
+    "title": "Books",
+    "image": "static/level1_all/book.jpg",
+    "more":true
+  },
+  {
+    "title": "Shoes",
+    "image": "static/level1_all/shoe.png",
+    "more":true
+  },
+  {
+    "title": "Bags",
+    "image": "static/level1_all/bag.jpg",
+    "more":true
+  },
+  {
+    "title": "Watches",
+    "image": "static/level1_all/watch.jpg",
     "more":true
   },
   {

@@ -10,12 +10,17 @@ import requests
 from flask_sqlalchemy import SQLAlchemy
 import uuid
 
+server_ip = '10.42.0.1'
+server_port = '5000'
+proxy_ip = '10.42.0.1'
+proxy_port = '5001'
+
 # configuration
 DATABASE = 'sqlite:////tmp/MetaAppServer.db'
 DEBUG = True
 privateKeyString = ''
 zmq_port = '5556'
-zmq_ip = '10.42.0.1'
+zmq_ip = server_ip
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE
@@ -25,7 +30,7 @@ pubsocket = context.socket(zmq.PUB)
 
 
 class User(db.Model):
-    id = db.            Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     uuid = db.Column(db.Text, unique=True)
     public_key = db.Column(db.Text)             #Actually the Aes seed
 
@@ -98,6 +103,8 @@ def reg_user(message):
     d1 = {}
     d1['Uuid'] = Uuid
     print d1
+    result = requests.post('http://'+proxy_ip+':'+proxy_port+'/adduser/', data=json.dumps(d1))
+    print result
     return json.dumps(d1)
 
 
@@ -109,12 +116,13 @@ def receive_msg():
     emessage = request.form['Message']
     seed = request.form['Seed']
     seed = decrypt_message(privateKey, seed)
-    emessage = emessage.replace('-', '+');
-    emessage = emessage.replace('_', '/');
+    emessage = emessage.replace('-', '+')
+    emessage = emessage.replace('_', '/')
     print seed
     print emessage
     obj = AESCipher(seed)
     finalmessage = obj.decrypt(emessage)
+    print finalmessage
 
     d = json.loads(finalmessage)
     uuid = d['Uuid']
@@ -129,8 +137,7 @@ def receive_msg():
     print uuid
     print requestId
     print topic
-    print intent_description
-    print deadline
+    print message
     userreq = UserReq(uuid, requestId, topic, message)
     db.session.add(userreq)
     db.session.commit()
@@ -139,7 +146,8 @@ def receive_msg():
     d2['RequestId'] = requestId
     d2['Topic'] = topic
     d2['Deadline'] = deadline
-    result = requests.post('http://10.42.0.1:5001/receive/request/', data=json.dumps(d2))
+    print "ok"
+    result = requests.post('http://'+proxy_ip+":"+proxy_port+'/receive/request/', data=json.dumps(d2))
     print result
     publish_msg(mogrify(topic, d))
     return "Intent Published"
@@ -179,8 +187,6 @@ def session_update():
         return "Session updated"
 
 
-
-
 @app.route('/display/', methods=['GET'])
 def display():
     if request.method == 'GET':
@@ -190,6 +196,6 @@ def display():
 
 
 if __name__ == '__main__':
-    app.run(host='10.42.0.1', port=5000)
+    app.run(host=server_ip, port=int(server_port))
 
 

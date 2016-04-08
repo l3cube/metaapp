@@ -1,0 +1,17 @@
+[
+  {
+    "title": "Desktops",
+    "image": "static/level2_Electronics/desktops.jpg",
+    "more": false
+  },
+  {
+    "title": "Laptops",
+    "image": "static/level2_Electronics/laptops.jpg",
+    "more": false
+  },
+  {
+    "title": "Accessories",
+    "image": "static/level2_Electronics/accessories.jpeg",
+    "more": false
+  }
+]

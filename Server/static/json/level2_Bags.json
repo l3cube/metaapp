@@ -1,0 +1,17 @@
+[
+  {
+    "title": "School Bags",
+    "image": "static/level2_Bags/school_bags.jpg",
+    "more": false
+  },
+  {
+    "title": "Hand Bags",
+    "image": "static/level2_Bags/hand_bags.jpeg",
+    "more": false
+  },
+  {
+    "title": "Travel Bags",
+    "image": "static/level2_Bags/travel_bags.jpg",
+    "more": false
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "title": "Men",
+    "image": "static/level2_Clothes/men.jpg",
+    "more": false
+  },
+  {
+    "title": "Women",
+    "image": "static/level2_Clothes/women.jpg",
+    "more": false
+  },
+  {
+    "title": "Children",
+    "image": "static/level2_Clothes/children.jpg",
+    "more": false
+  }
+]

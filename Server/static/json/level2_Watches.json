@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Digital",
+    "image": "static/level2_Watches/digital.jpg",
+    "more": false
+  },
+  {
+    "title": "Analog",
+    "image": "static/level2_Watches/analog.jpg",
+    "more": false
+  }
+]

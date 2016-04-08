@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Welcome!!!</title>
+
+    <!-- Bootstrap -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Meta-App</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li><a href="/display/">Homepage</a></li>
+                <li class="/homepage/"><a href="#">Namespace<span class="sr-only">(current)</span></a></li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <p class="navbar-text">Signed in as {{ username }}</p>
+
+                <form class="nav navbar-nav navbar-right" action="/logout/" method="POST">
+                    <button type="submit" class="btn btn-default navbar-btn">Sign Out</button>
+                </form>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }} alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
+    {{ message }}
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+<form action="/namespace/access/" method="POST">
+    <h2 class="form-signin-heading">Send an Access Request:</h2>
+
+    <div class="form-group">
+        <label>Filters</label>
+        <label class="radio-inline"><input type="radio" name="FileType" value="Photo">Photo</label>
+        <label class="radio-inline"><input type="radio" name="FileType" value="Video">Video</label>
+        <label class="radio-inline"><input type="radio" name="FileType" value="Text Files">Text Files</label>
+        <label class="radio-inline"><input type="radio" name="FileType" value="Contacts">Contact</label>
+        <label class="radio-inline"><input type="radio" name="FileType" value="Message">Message</label>
+    </div>
+    <button class="btn btn-default btn-primary" type="submit">Send</button>
+</form>
+<br>
+<form action="/namespace/" method="POST">
+    <h2 class="form-signin-heading">Send an List Request:</h2>
+
+    <div class="form-group">
+        <label>Filters</label>
+        {% if file_type == "Photo" %}
+            <label class="radio-inline"><input type="radio" name="FileType" value="Photo" checked>Photo</label>
+        {% else %}
+            <label class="radio-inline"><input type="radio" name="FileType" value="Photo">Photo</label>
+        {% endif %}
+        {% if file_type == "Video" %}
+            <label class="radio-inline"><input type="radio" name="FileType" value="Video" checked>Video</label>
+        {% else %}
+            <label class="radio-inline"><input type="radio" name="FileType" value="Video">Video</label>
+        {% endif %}
+        {% if file_type == "Text Files" %}
+            <label class="radio-inline"><input type="radio" name="FileType" value="Text Files" checked>Text Files</label>
+        {% else %}
+            <label class="radio-inline"><input type="radio" name="FileType" value="Text Files">Text Files</label>
+        {% endif %}
+        {% if file_type == "Contact" %}
+            <label class="radio-inline"><input type="radio" name="FileType" value="Contacts" checked>Contact</label>
+        {% else %}
+            <label class="radio-inline"><input type="radio" name="FileType" value="Contacts">Contact</label>
+        {% endif %}
+        {% if file_type == "Message" %}
+            <label class="radio-inline"><input type="radio" name="FileType" value="Message" checked>Message</label>
+        {% else %}
+            <label class="radio-inline"><input type="radio" name="FileType" value="Message">Message</label>
+        {% endif %}
+    </div>
+    <button class="btn btn-default btn-primary" type="submit">Send</button>
+</form>
+<table class="table table-hover">
+    <tr>
+        <th>Uuid</th>
+        <th>File Id</th>
+        <th>Open</th>
+    </tr>
+    {% for entry in entries %}
+    <tr>
+        <td>{{ entry.uuid }}</td>
+        <td>{{ entry.fileid }}</td>
+        <td>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#respondModal"
+                    data-uuid="{{ entry.uuid }}" data-requestid="{{ entry.reqid }}" data-topic="{{ entry.topic }}"
+                    data-intentdesc="{{ entry.intentdesc }}">Read
+            </button>
+        </td>
+    </tr>
+    {% else %}
+    <tr>
+        <td>-</td>
+        <td>-</td>
+        <td>-</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div class="modal fade" id="respondModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+    <div class="modal-dialog" role="document">
+        <form class="modal-content" action="/respond/" method="post">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">New Response</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group1">
+                    <label for="uuid" class="control-label">UUID:</label>
+                    <input type="text" class="form-control" id="uuid" name="uuid" readonly>
+                </div>
+                <div class="form-group2">
+                    <label for="requestid" class="control-label">Request ID:</label>
+                    <input type="text" class="form-control" id="requestid" name="requestid" readonly>
+                </div>
+                <div class="form-group3">
+                    <label for="topic" class="control-label">Topic:</label>
+                    <input type="text" class="form-control" id="topic" name="topic" readonly>
+                </div>
+                <div class="form-group4">
+                    <label for="intentdesc" class="control-label">Intent Description:</label>
+                    <textarea class="form-control" id="intentdesc" name="intentdesc" readonly></textarea>
+                </div>
+                <div class="form-group5">
+                    <label for="servicedesc" class="control-label">Service Description:</label>
+                    <textarea class="form-control" id="servicedesc" name="servicedesc" required></textarea>
+                </div>
+                <div class="form-group6">
+                    <label for="cost" class="control-label">Cost:</label>
+                    <input type="text" class="form-control" id="cost" name="cost" required>
+                </div>
+                <div class="form-group7">
+                    <label for="ttc" class="control-label">Time to Complete:</label>
+                    <input type="text" class="form-control" id="ttc" name="ttc" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Send Response</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script>
+        $('#respondModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        var uuid_value = button.data('uuid') // Extract info from data-* attributes
+        var request_val = button.data('requestid')
+        var topic_value = button.data('topic')
+        var intentdesc_value = button.data('intentdesc')
+        // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+        // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+        var modal = $(this)
+        modal.find('.modal-body .form-group1 input').val(uuid_value)
+        modal.find('.modal-body .form-group2 input').val(request_val)
+        modal.find('.modal-body .form-group3 input').val(topic_value)
+        modal.find('.modal-body .form-group4 textarea').val(intentdesc_value)
+        })
+
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+[
+  {
+    "title": "Formal",
+    "image": "static/level2_Shoes/formal.jpg",
+    "more": false
+  },
+  {
+    "title": "Casual",
+    "image": "static/level2_Shoes/casual.jpg",
+    "more": false
+  },
+  {
+    "title": "Floaters",
+    "image": "static/level2_Shoes/floaters.jpeg",
+    "more": false
+  }
+]

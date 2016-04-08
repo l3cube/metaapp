@@ -1,0 +1,17 @@
+[
+  {
+    "title": "Fictional",
+    "image": "static/level2_Books/fictional.jpg",
+    "more": false
+  },
+  {
+    "title": "Study",
+    "image": "static/level2_Books/study.jpeg",
+    "more": false
+  },
+  {
+    "title": "Indian languages",
+    "image": "static/level2_Books/indian_languages.jpg",
+    "more": false
+  }
+]
