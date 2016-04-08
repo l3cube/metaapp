@@ -1,0 +1,21 @@
+
+--------------------------------------------------
+gen_regions input_fn=test text_fn_ext=.tok label_fn_ext=.cat vocab_fn=imdb_trn-30000.vocab label_dic_fn=imdb_cat.dic patch_size=3 region_fn_stem=test-op
+--------------------------------------------------
+
+   input_fn=test
+   text_fn_ext=.tok
+   label_fn_ext=.cat
+   label_dic_fn=imdb_cat.dic
+   vocab_fn=imdb_trn-30000.vocab
+   region_fn_stem=test-op
+   patch_size=3
+   patch_stride=1
+   padding=0
+   y_ext=.y
+Tue Mar 15 02:21:10 2016: scanning test.tok
+Tue Mar 15 02:21:10 2016: test.tok
+#data=1 no-cat=0 multi-cat=0
+Tue Mar 15 02:21:10 2016: Writing test-op.xsmatvar (90000 x 3, #data=1) ... 
+Tue Mar 15 02:21:10 2016: test-op.y: 2 x 1 (1)  (text)
+Tue Mar 15 02:21:10 2016: Done ... 
