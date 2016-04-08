@@ -10,26 +10,30 @@ public class UserResponses {
     String service_desc;
     String time_to_complete;
     float cost;
+    String seller;
 
     public UserResponses() {
 
     }
 
-    public UserResponses(int requestId, String topic, String service_desc, String time_to_complete,float cost) {
+    public UserResponses(int requestId, String topic, String service_desc, String time_to_complete, float cost, String seller) {
         this.requestId = requestId;
         this.topic = topic;
-        this.service_desc=service_desc;
-        this.time_to_complete=time_to_complete;
-        this.cost=cost;
+        this.service_desc = service_desc;
+        this.time_to_complete = time_to_complete;
+        this.cost = cost;
+        this.seller = seller;
     }
 
-    public UserResponses(int id,int requestId, String topic, String service_desc, String time_to_complete,float cost) {
-        this.id=id;
+    public UserResponses(int id, int requestId, String topic, String service_desc, String time_to_complete, float cost, String seller) {
+        this.id = id;
         this.requestId = requestId;
         this.topic = topic;
-        this.service_desc=service_desc;
-        this.time_to_complete=time_to_complete;
-        this.cost=cost;
+        this.service_desc = service_desc;
+        this.time_to_complete = time_to_complete;
+        this.cost = cost;
+        this.seller = seller;
+
     }
 
     public int getId() {
@@ -78,5 +82,13 @@ public class UserResponses {
 
     public void setCost(float cost) {
         this.cost = cost;
+    }
+
+    public String getSeller() {
+        return seller;
+    }
+
+    public void setSeller(String seller) {
+        this.seller = seller;
     }
 }

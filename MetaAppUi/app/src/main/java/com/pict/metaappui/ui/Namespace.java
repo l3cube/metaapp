@@ -13,24 +13,37 @@ import com.pict.metaappui.R;
 
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.pict.metaappui.adapter.ContentGridAdapter;
 import com.pict.metaappui.modal.ContentItem;
+import com.pict.metaappui.modal.LogItem;
+import com.pict.metaappui.modal.SellerRank;
+import com.pict.metaappui.util.DatabaseHelper;
+import com.pict.metaappui.util.Preferences;
+import com.pict.metaappui.util.postAsync2;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class Namespace extends Fragment {
+public class Namespace extends Fragment implements postAsync2.PostExecuteInterface {
 
     RecyclerView mRecyclerView;
     RecyclerView.LayoutManager mLayoutManager;
     ContentGridAdapter mAdapter;
     private static final String TAG="Namespace";
     private List<ContentItem> mItems=new ArrayList<ContentItem>();
+    DatabaseHelper db;
 
     public Namespace() {
         // Required empty public constructor
@@ -47,6 +60,7 @@ public class Namespace extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        new postAsync2("Fetching notifications...",getActivity(),this,1).execute("2", "Uuid", Preferences.getString(Preferences.PHONE_NUMBER), Preferences.proxyurl + "namespace/notification/");
         mItems.clear();
         //Extend the patterns combination
         mItems.add(new ContentItem("Photo", R.drawable.icon_photo, ".*\\.jpg$"));
@@ -82,4 +96,38 @@ public class Namespace extends Fragment {
         super.onSaveInstanceState(outState);
     }
 
+    @Override
+    public void postExecute(int responseCode, String response, int tag) {
+        if(tag==1){
+            if(responseCode == 200){
+                try {
+                    db = new DatabaseHelper(getActivity());
+                    LogItem obj=new LogItem();
+                    SellerRank seller_obj;
+                    JSONObject jsonObject;
+                    JSONArray jsonArray=new JSONArray(response);
+                    for(int i=0; i<jsonArray.length(); i++){
+                        jsonObject = jsonArray.getJSONObject(i);
+                        String seller = jsonObject.getString("Seller");
+                        String filetype = jsonObject.getString("FileType");
+
+                        obj.setName(seller);
+                        obj.setLog(seller + " wants to access files of type " + filetype);
+                        obj.setTimestamp(Calendar.getInstance().getTime().toString());
+                        long id = db.createLog(obj);
+                        Toast.makeText(getContext(),seller+" wants to access files of type "+filetype,Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "record created with id " + id);
+                        seller_obj =  new SellerRank();
+                        seller_obj.setName(jsonObject.getString("Seller"));
+                        seller_obj.setRank(jsonObject.getDouble("Rank"));
+                        seller_obj.setRating(jsonObject.getInt("Rating"));
+                        db.createSeller(seller_obj);
+                    }
+                    db.closeDB();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }

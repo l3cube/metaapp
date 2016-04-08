@@ -4,6 +4,7 @@ package com.pict.metaappui.ui;
 import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.Dialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -14,6 +15,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.pict.metaappui.R;
@@ -21,7 +25,9 @@ import com.pict.metaappui.crypto.AESnew;
 import com.pict.metaappui.crypto.RSA;
 import com.pict.metaappui.modal.UserRequest;
 import com.pict.metaappui.util.DatabaseHelper;
+import com.pict.metaappui.util.DatePickerFragment;
 import com.pict.metaappui.util.Preferences;
+import com.pict.metaappui.util.TimePickerFragment;
 import com.pict.metaappui.util.postAsync;
 
 import org.json.JSONException;
@@ -40,21 +46,25 @@ import javax.crypto.NoSuchPaddingException;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class Intent_publish extends Fragment {
+public class Intent_publish extends Fragment implements postAsync.PostExecuteInterface {
     String uuid;
     String requestId;
     String category;
     String description;
-    String deadline;
     String tlc;
+
+    private String expiryDate;
+    private String expiryTime;
+
     private static final String TAG="Intent_publish";
 
     Button publishButton;
     EditText categoryText;
     EditText descriptionText;
-    EditText expiryDateText;
-    Button expiryButton;
-
+    TextView expiryDateText;
+    TextView expiryTimeText;
+    ImageButton expiryDateButton;
+    ImageButton expiryTimeButton;
     DatabaseHelper db;
 
     public Intent_publish() {
@@ -77,12 +87,22 @@ public class Intent_publish extends Fragment {
 
         descriptionText=(EditText)view.findViewById(R.id.descriptionText);
 
-        expiryDateText=(EditText)view.findViewById(R.id.expiryDateText);
-        expiryButton=(Button)view.findViewById(R.id.expiryDateButton);
-        expiryButton.setOnClickListener(new View.OnClickListener() {
+        expiryDateText = (TextView)view.findViewById(R.id.expiryDateText);
+        expiryTimeText = (TextView)view.findViewById(R.id.expiryTimeText);
+        expiryDateButton = (ImageButton)view.findViewById(R.id.expiryDateButton);
+        expiryTimeButton = (ImageButton)view.findViewById(R.id.expiryTimeButton);
+
+        expiryDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onExpiryButtonClicked();
+                pickDate();
+            }
+        });
+
+        expiryTimeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pickTime();
             }
         });
 
@@ -114,16 +134,28 @@ public class Intent_publish extends Fragment {
         return view;
     }
 
-    public void onExpiryButtonClicked(){
+    public void pickDate(){
         DatePickerFragment dateFragment=new DatePickerFragment();
-        dateFragment.setOnDateSetListener(new OnDateSetListener() {
+        dateFragment.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                deadline=new StringBuilder().append(dayOfMonth).append("-").append(monthOfYear+1).append("-").append(year).toString();
-                expiryDateText.setText(deadline);
+                expiryDate = new StringBuilder().append(year).append("-").append(monthOfYear + 1).append("-").append(dayOfMonth).toString();
+                expiryDateText.setText(expiryDate);
             }
         });
         dateFragment.show(getFragmentManager(),"Expiry Date");
+    }
+
+    public void pickTime(){
+        TimePickerFragment timeFragment=new TimePickerFragment();
+        timeFragment.setOnTimeSetListener(new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                expiryTime = new StringBuilder().append(hourOfDay).append(":").append(minute).append(":").append(0).toString();
+                expiryTimeText.setText(expiryTime);
+            }
+        });
+        timeFragment.show(getFragmentManager(),"Expiry Time");
     }
 
     public void onPublishButtonClicked() throws JSONException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException {
@@ -131,9 +163,13 @@ public class Intent_publish extends Fragment {
         requestId = Integer.toString(Preferences.getInteger(Preferences.REQUEST_ID));
         description=descriptionText.getText().toString();
 
+        JSONObject deadline=new JSONObject();
+        deadline.accumulate("Date",expiryDate);
+        deadline.accumulate("Time",expiryTime);
+
         JSONObject message=new JSONObject();
         message.accumulate("Intent_Description",description);
-        message.accumulate("Deadline", deadline);
+        message.accumulate("Deadline",deadline.toString());
 
         JSONObject finalmessage=new JSONObject();
         finalmessage.accumulate("Uuid",uuid);
@@ -142,8 +178,8 @@ public class Intent_publish extends Fragment {
         finalmessage.accumulate("Message", message.toString());
 
         String plainText=finalmessage.toString();
-        String seed="Aes seed value";
-        String aesEncrptJstr= AESnew.getInstance().encrypt_string(plainText);
+        String seed=Preferences.getString(Preferences.AES_SEED);
+        String aesEncrptJstr= AESnew.getInstance(seed).encrypt_string(plainText);
         Log.i(TAG, "Encrpyted Message:" + aesEncrptJstr);
         Log.i(TAG, "Length:" + aesEncrptJstr.length());
         String rsaEncryptSeed= RSA.encryptWithKey(Preferences.SERVER_PUB_KEY, seed);
@@ -152,44 +188,28 @@ public class Intent_publish extends Fragment {
         sendJson.accumulate("Seed", rsaEncryptSeed);
         String sendStr=sendJson.toString();
         Log.i(TAG, "Final Message:" + sendStr);
-        new postAsync("Publishing Intent...",getActivity()).execute("4", "Message", aesEncrptJstr, "Seed", rsaEncryptSeed, Preferences.url + "receive/");
+        new postAsync("Publishing Intent...",getActivity(),this).execute("4", "Message", aesEncrptJstr, "Seed", rsaEncryptSeed, Preferences.url + "receive/");
         Log.i(TAG, "Publish intent");
 
-        //add to database
-        db=new DatabaseHelper(getActivity());
-        UserRequest obj=new UserRequest();
-        obj.setRequestId(Integer.parseInt(requestId));
-        obj.setTopic(tlc);
-        obj.setIntent_desc(description);
-        obj.setDeadline(deadline);
-        obj.setPending(true);
-        long id=db.createUserRequest(obj);
-        db.closeDB();
-        Log.i(TAG,"Entry made with id "+id);
-        Preferences.putInteger(Preferences.REQUEST_ID,Integer.parseInt(requestId)+1);
+
     }
 
-    public static class DatePickerFragment extends DialogFragment{
-
-        private OnDateSetListener onDateSetListener;
-
-        public DatePickerFragment() {}
-
-        public void setOnDateSetListener(OnDateSetListener onDateSetListener) {
-            this.onDateSetListener = onDateSetListener;
+    @Override
+    public void postExecute(int responseCode) {
+        if(responseCode==200){
+            //add to database
+            db=new DatabaseHelper(getActivity());
+            UserRequest obj=new UserRequest();
+            obj.setRequestId(Integer.parseInt(requestId));
+            obj.setTopic(tlc);
+            obj.setIntent_desc(description);
+            obj.setDeadline_date(expiryDate);
+            obj.setDeadline_time(expiryTime);
+            obj.setPending(true);
+            long id=db.createUserRequest(obj);
+            db.closeDB();
+            Log.i(TAG,"Entry made with id "+id);
+            Preferences.putInteger(Preferences.REQUEST_ID,Integer.parseInt(requestId)+1);
         }
-
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the current date as the default date in the picker
-            final Calendar c = Calendar.getInstance();
-            int year = c.get(Calendar.YEAR);
-            int month = c.get(Calendar.MONTH);
-            int day = c.get(Calendar.DAY_OF_MONTH);
-
-            // Create a new instance of DatePickerDialog and return it
-            return new DatePickerDialog(getActivity(), onDateSetListener, year, month, day);
-        }
-
     }
 }

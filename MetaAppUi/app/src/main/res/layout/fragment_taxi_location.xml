@@ -2,44 +2,170 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" tools:context="com.pict.metaappui.ui.TaxiLocation">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="PickUp Location"
-        android:id="@+id/pickUpLabel"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Intent Category:"
+                android:id="@+id/categoryLabel"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="10dp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Drop Location"
-        android:id="@+id/dropLabel"
-        android:layout_below="@+id/pickUpLabel"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="40dp" />
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/categoryText"
+                android:inputType="text"
+                android:editable="false"
+                android:layout_below="@+id/categoryLabel"
+                android:layout_centerHorizontal="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/pickUpText"
-        android:layout_above="@+id/dropLabel"
-        android:layout_toEndOf="@+id/pickUpLabel"
-        android:layout_marginStart="42dp"
-        android:hint="Select a PickUp Location"
-        android:editable="false" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Intent Description"
+                android:id="@+id/descriptionLabel"
+                android:layout_below="@+id/categoryText"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="40dp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/dropText"
-        android:layout_alignTop="@+id/dropLabel"
-        android:layout_alignStart="@+id/pickUpText"
-        android:hint="Select a DropOff Location"
-        android:editable="false"/>
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:ems="10"
+                android:id="@+id/descriptionText"
+                android:hint="Provide a description for the chosen category of intent."
+                android:editable="true"
+                android:layout_below="@+id/descriptionLabel"
+                android:layout_centerHorizontal="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="PickUp Location"
+                android:id="@+id/pickUpLabel"
+                android:layout_below="@+id/descriptionText"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="40dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="DropOff Location"
+                android:id="@+id/dropOffLabel"
+                android:layout_below="@+id/pickUpLabel"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="40dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="60dp"
+                android:textSize="16sp"
+                android:id="@+id/pickUpText"
+                android:hint="Select a PickUp Location"
+                android:editable="false"
+                android:layout_above="@+id/dropOffLabel"
+                android:layout_toEndOf="@+id/pickUpLabel"
+                android:layout_marginStart="42dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="60dp"
+                android:textSize="16sp"
+                android:id="@+id/dropOffText"
+                android:hint="Select a DropOff Location"
+                android:editable="false"
+                android:layout_above="@+id/expiryLabel"
+                android:layout_toEndOf="@+id/dropOffLabel"
+                android:layout_marginStart="42dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Intent Expiry:"
+                android:id="@+id/expiryLabel"
+                android:layout_below="@+id/dropOffLabel"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="40dp" />
+
+            <LinearLayout
+                android:id="@+id/expiryDateLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:layout_below="@+id/expiryLabel"
+                android:layout_alignParentStart="true"
+                android:paddingLeft="5dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="date"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:ems="10"
+                android:id="@+id/expiryDateText"
+                android:text="Select Date"
+                android:textAlignment="center"/>
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/expiryDateButton"
+                android:src="@android:drawable/ic_menu_my_calendar" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/expiryTimeLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:layout_below="@+id/expiryDateLayout"
+                android:layout_alignParentStart="true"
+                android:paddingLeft="5dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="date"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:ems="10"
+                android:id="@+id/expiryTimeText"
+                android:text="Select Time"
+                android:textAlignment="center"
+                android:editable="false"/>
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/expiryTimeButton"
+                android:src="@android:drawable/ic_menu_day" />
+            </LinearLayout>
+
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Make Request"
+                android:id="@+id/publishButton"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/expiryTimeLayout"
+                android:layout_marginTop="40dp"/>
+
+        </RelativeLayout>
+    </ScrollView>
+
 
 </RelativeLayout>

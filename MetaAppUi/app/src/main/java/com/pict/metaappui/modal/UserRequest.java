@@ -8,27 +8,30 @@ public class UserRequest {
     int requestId;
     String topic;
     String intent_desc;
-    String deadline;
+    String deadline_date;
+    String deadline_time;
     boolean pending;
 
     public UserRequest(){
 
     }
 
-    public UserRequest(int requestId,String topic,String intent_desc,String deadline,boolean pending){
+    public UserRequest(int requestId,String topic,String intent_desc,String deadline_date,String deadline_time,boolean pending){
         this.requestId=requestId;
         this.topic=topic;
         this.intent_desc=intent_desc;
-        this.deadline=deadline;
+        this.deadline_date=deadline_date;
+        this.deadline_time=deadline_time;
         this.pending=pending;
     }
 
-    public UserRequest(int id,int requestId,String topic,String intent_desc,String deadline,boolean pending){
+    public UserRequest(int id,int requestId,String topic,String intent_desc,String deadline_date,String deadline_time,boolean pending){
         this.id=id;
         this.requestId=requestId;
         this.topic=topic;
         this.intent_desc=intent_desc;
-        this.deadline=deadline;
+        this.deadline_date=deadline_date;
+        this.deadline_time=deadline_time;
         this.pending=pending;
     }
 
@@ -38,6 +41,22 @@ public class UserRequest {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getDeadline_date() {
+        return deadline_date;
+    }
+
+    public void setDeadline_date(String deadline_date) {
+        this.deadline_date = deadline_date;
+    }
+
+    public String getDeadline_time() {
+        return deadline_time;
+    }
+
+    public void setDeadline_time(String deadline_time) {
+        this.deadline_time = deadline_time;
     }
 
     public int getRequestId() {
@@ -64,13 +83,6 @@ public class UserRequest {
         this.intent_desc = intent_desc;
     }
 
-    public String getDeadline() {
-        return deadline;
-    }
-
-    public void setDeadline(String deadline) {
-        this.deadline = deadline;
-    }
 
     public boolean isPending() {
         return pending;

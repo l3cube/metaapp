@@ -32,16 +32,24 @@ import java.util.Map;
 
 public class postAsync2 extends AsyncTask<String, Integer, Integer> {
 
+    public interface PostExecuteInterface {
+        void postExecute(int responseCode,String response,int tag);
+    }
+
     String response="";
     String TAG="postAsync2";
     String displayMessage;
     ProgressDialog progressDialog;
     Activity activity;
     DatabaseHelper db;
+    PostExecuteInterface postExecuteInterface;
+    int tag;
 
-    public postAsync2(String displayMessage,Activity activity){
+    public postAsync2(String displayMessage,Activity activity,PostExecuteInterface postExecuteInterface,int tag){
         this.displayMessage=displayMessage;
         this.activity=activity;
+        this.postExecuteInterface=postExecuteInterface;
+        this.tag = tag;
         progressDialog=new ProgressDialog(activity);
     }
 
@@ -142,29 +150,8 @@ public class postAsync2 extends AsyncTask<String, Integer, Integer> {
         super.onPostExecute(responseCode);
         db=new DatabaseHelper(activity);
 
+        postExecuteInterface.postExecute(responseCode,response,tag);
         if(responseCode==200){
-            try {
-                JSONObject jsonobj;
-                UserResponses obj;
-                JSONObject offer;
-                JSONArray jarr=new JSONArray(response);
-                for(int i=0;i<jarr.length();i++){
-                    jsonobj=jarr.getJSONObject(i);
-                    obj=new UserResponses();
-                    obj.setRequestId(Integer.parseInt(jsonobj.getString("RequestId")));
-                    obj.setTopic(jsonobj.getString("Topic"));
-                    offer=new JSONObject(jsonobj.getString("Offer"));
-                    obj.setService_desc(offer.getString("Service_Description"));
-                    obj.setCost(Float.parseFloat(offer.getString("Cost")));
-                    obj.setTime_to_complete(offer.getString("Time_to_Complete"));
-                    long id=db.createUserResponses(obj);
-                    int noofrowsaffected=db.updatePendingRow(Integer.parseInt(jsonobj.getString("RequestId")));
-                    Log.i(TAG, "Entry made with id " + id +" and no of rows affected "+noofrowsaffected );
-                }
-                db.closeDB();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
             if(progressDialog.isShowing()){
                 progressDialog.dismiss();
             }

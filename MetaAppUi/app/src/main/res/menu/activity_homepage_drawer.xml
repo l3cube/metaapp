@@ -8,6 +8,8 @@
             android:title="Offers" />
         <item android:id="@+id/nav_namespace" android:icon="@android:drawable/ic_menu_slideshow"
             android:title="User Namespace" />
+        <item android:id="@+id/nav_logs" android:icon="@android:drawable/ic_menu_recent_history"
+            android:title="Logs" />
         <item android:id="@+id/nav_about" android:icon="@android:drawable/ic_menu_manage"
             android:title="About Us" />
     </group>

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-
 import com.pict.metaappui.util.Preferences;
 
 public class MainActivity extends Activity {

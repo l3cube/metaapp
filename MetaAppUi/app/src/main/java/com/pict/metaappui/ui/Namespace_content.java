@@ -1,5 +1,6 @@
 package com.pict.metaappui.ui;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,6 +12,8 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.LinearLayoutManager;
@@ -39,17 +42,23 @@ import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
 import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 import com.pict.metaappui.R;
 import com.pict.metaappui.modal.FileItem;
+import com.pict.metaappui.modal.LogItem;
 import com.pict.metaappui.util.DatabaseHelper;
 import com.pict.metaappui.util.DividerItemDecoration;
+import com.pict.metaappui.util.Preferences;
+import com.pict.metaappui.util.postAsync2;
+
+import org.json.JSONArray;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
 
-public class Namespace_content extends AppCompatActivity implements View.OnClickListener {
+public class Namespace_content extends AppCompatActivity implements View.OnClickListener, FileAccessDialog.FileAccessDialogListener, postAsync2.PostExecuteInterface {
 
     RecyclerView mRecyclerView;
     RecyclerView.LayoutManager mLayoutManager;
@@ -61,6 +70,8 @@ public class Namespace_content extends AppCompatActivity implements View.OnClick
     private DatabaseHelper db;
     Intent intent;
 
+    String seller;
+    List<String> fileid;
 
     FloatingActionButton mFAB;
     FloatingActionMenu mFABMenu;
@@ -106,6 +117,26 @@ public class Namespace_content extends AppCompatActivity implements View.OnClick
                 return true;
 
             }
+
+            if (menuItem.getItemId()==  R.id.menu_item_share_file){
+                // Need to finish the action mode before doing the following,
+                // not after. No idea why, but it crashes.
+                actionMode.finish();
+                db = new DatabaseHelper(getApplicationContext());
+                boolean ret=false;
+                fileid=new ArrayList<>();
+                for (int i = mItems.size(); i >= 0; i--) {
+                    if (mMultiSelector.isSelected(i, 0)) {
+                        FileItem item = mItems.get(i);
+                        fileid.add(item.getName());
+                    }
+                }
+                createDialog();
+                mMultiSelector.clearSelections();
+                return true;
+
+            }
+
 
             return false;
         }
@@ -211,24 +242,124 @@ public class Namespace_content extends AppCompatActivity implements View.OnClick
 
     @Override
     public void onClick(View v) {
-        Log.i(TAG,contentType);
+        Log.i(TAG, contentType);
         if(v.getTag().equals(TAG_ADD_FILE)){
             if(contentType.equals("Photo") || contentType.equals("Video") || contentType.equals("Text Files")) {
-                Toast.makeText(getApplicationContext(), "Add File", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getApplicationContext(), FilePickerActivity.class);
-                intent.putExtra(FilePickerActivity.ARG_FILE_FILTER, Pattern.compile(pattern));
-                intent.putExtra(FilePickerActivity.ARG_DIRECTORIES_FILTER, false);
-                startActivityForResult(intent, TAG_FILE_ACTION);
+                if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+                    // Should we show an explanation?
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(Namespace_content.this,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                        // Show an expanation to the user *asynchronously* -- don't block
+                        // this thread waiting for the user's response! After the user
+                        // sees the explanation, try again to request the permission.
+
+                    } else {
+
+                        // No explanation needed, we can request the permission.
+
+                        ActivityCompat.requestPermissions(Namespace_content.this,
+                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                1);
+
+                        // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                        // app-defined int constant. The callback method gets the
+                        // result of the request.
+                    }
+                }
+                else{
+                    Toast.makeText(getApplicationContext(), "Add File", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(getApplicationContext(), FilePickerActivity.class);
+                    intent.putExtra(FilePickerActivity.ARG_FILE_FILTER, Pattern.compile(pattern));
+                    intent.putExtra(FilePickerActivity.ARG_DIRECTORIES_FILTER, false);
+                    startActivityForResult(intent, TAG_FILE_ACTION);
+                }
             }
             if(contentType.equals("Contacts")){
-                Toast.makeText(getApplicationContext(), "Add Contact", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
-                startActivityForResult(intent, TAG_CONTACT_ACTION);
+                if (ContextCompat.checkSelfPermission(getApplicationContext(),
+                        Manifest.permission.READ_CONTACTS)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+                    // Should we show an explanation?
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(Namespace_content.this,
+                            Manifest.permission.READ_CONTACTS)) {
+
+                        // Show an expanation to the user *asynchronously* -- don't block
+                        // this thread waiting for the user's response! After the user
+                        // sees the explanation, try again to request the permission.
+
+                    } else {
+
+                        // No explanation needed, we can request the permission.
+
+                        ActivityCompat.requestPermissions(Namespace_content.this,
+                                new String[]{Manifest.permission.READ_CONTACTS},
+                                2);
+
+                        // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                        // app-defined int constant. The callback method gets the
+                        // result of the request.
+                    }
+                }
+                else{
+                    Toast.makeText(getApplicationContext(), "Add Contact", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+                    startActivityForResult(intent, TAG_CONTACT_ACTION);
+                }
+
             }
         }
         else if(v.getTag().equals(TAG_REMOVE_FILE)){
             Toast.makeText(getApplicationContext(),"Remove File", Toast.LENGTH_SHORT).show();
             //Implement removal of files
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getApplicationContext(), "Add File", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(getApplicationContext(), FilePickerActivity.class);
+                    intent.putExtra(FilePickerActivity.ARG_FILE_FILTER, Pattern.compile(pattern));
+                    intent.putExtra(FilePickerActivity.ARG_DIRECTORIES_FILTER, false);
+                    startActivityForResult(intent, TAG_FILE_ACTION);
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+            case 2: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getApplicationContext(), "Add Contact", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+                    startActivityForResult(intent, TAG_CONTACT_ACTION);
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
         }
     }
 
@@ -263,7 +394,7 @@ public class Namespace_content extends AppCompatActivity implements View.OnClick
             String cName="";
             String cNumber="";
             Uri contactData = data.getData();
-            Cursor c =  managedQuery(contactData, null, null, null, null);
+            Cursor c =  getContentResolver().query(contactData, null, null, null, null);
             if (c.moveToFirst()) {
                 String id =c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts._ID));
                 String hasPhone =c.getString(c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER));
@@ -299,7 +430,7 @@ public class Namespace_content extends AppCompatActivity implements View.OnClick
     }
 
     public void onItemClicked(String fileLocation) {
-        Log.i(TAG,"Opening: "+fileLocation);
+        Log.i(TAG, "Opening: " + fileLocation);
         File file = new File(fileLocation);
         String extension = extensionFromName(file.getName());
         String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
@@ -329,6 +460,44 @@ public class Namespace_content extends AppCompatActivity implements View.OnClick
         } else {
             return fileName.substring(dotPosition + 1).toLowerCase(Locale.getDefault());
         }
+    }
+
+
+    public void createDialog(){
+        String[] sellers = db.getSellers();
+        FileAccessDialog dialog=new FileAccessDialog();
+        dialog.setData(contentType,fileid,sellers,this);
+        dialog.show(getSupportFragmentManager(), "FileAccess");
+    }
+
+    @Override
+    public void sendFiles(String seller) {
+        this.seller = seller;
+        JSONArray jsonArray=new JSONArray();
+        for(int i=0; i<fileid.size(); i++){
+            jsonArray.put(fileid.get(i));
+        }
+        new postAsync2("Sending file list...",this,this,1).execute("8","Seller",seller,"FileType",contentType,"Uuid",Preferences.getString(Preferences.PHONE_NUMBER),"FileId",jsonArray.toString(), Preferences.proxyurl+"namespace/files/");
+
+    }
+
+    @Override
+    public void postExecute(int responseCode, String response, int tag) {
+        if(tag==1){
+            if(responseCode==200){
+                db=new DatabaseHelper(getApplicationContext());
+                LogItem obj=new LogItem();
+                obj.setName(seller);
+                obj.setTimestamp(Calendar.getInstance().getTime().toString());
+                for(int i=0; i<fileid.size(); i++){
+                    obj.setLog(seller + " provided access of file " + fileid.get(i));
+                    long id = db.createLog(obj);
+                    Log.e(TAG,"record created with id "+id);
+                }
+                db.closeDB();
+            }
+        }
+
     }
 
     public class ContentListAdapter extends RecyclerView.Adapter<ContentListAdapter.ViewHolder> {

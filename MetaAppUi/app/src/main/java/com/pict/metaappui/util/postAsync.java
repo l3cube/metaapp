@@ -23,15 +23,21 @@ import java.util.Map;
  */
 public class postAsync extends AsyncTask<String, Integer, Integer> {
 
+    public interface PostExecuteInterface {
+        public void postExecute(int responseCode);
+    }
+
     String response="";
     String TAG="postAsync";
     String displayMessage;
     ProgressDialog progressDialog;
     Activity activity;
+    PostExecuteInterface postExecuteInterface;
 
-    public postAsync(String displayMessage,Activity activity){
+    public postAsync(String displayMessage,Activity activity,PostExecuteInterface postExecuteInterface){
         this.displayMessage=displayMessage;
         this.activity=activity;
+        this.postExecuteInterface=postExecuteInterface;
         progressDialog=new ProgressDialog(activity);
     }
 
@@ -127,6 +133,7 @@ public class postAsync extends AsyncTask<String, Integer, Integer> {
     @Override
     protected void onPostExecute(Integer responseCode) {
         super.onPostExecute(responseCode);
+        postExecuteInterface.postExecute(responseCode);
         if(progressDialog.isShowing()){
             progressDialog.dismiss();
         }

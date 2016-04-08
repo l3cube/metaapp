@@ -107,7 +107,11 @@ public class Level1_Categories extends Fragment {
                 }
                 else{
                     if(itemSelected.equals("Taxi")){
+                        Bundle bundle = new Bundle();
+                        bundle.putString("Category", itemSelected);
+                        bundle.putString("TLC", "Taxi");
                         TaxiLocation fragment = new TaxiLocation();
+                        fragment.setArguments(bundle);
                         FragmentTransaction transaction = getFragmentManager().beginTransaction();
                         transaction.replace(R.id.fragment_container, fragment);
                         transaction.addToBackStack(null);

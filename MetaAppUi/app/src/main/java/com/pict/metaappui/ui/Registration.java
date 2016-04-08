@@ -28,7 +28,7 @@ import com.pict.metaappui.util.RandomString;
 import com.pict.metaappui.util.postAsync;
 import com.pict.metaappui.util.postAsync1;
 
-public class Registration extends AppCompatActivity {
+public class Registration extends AppCompatActivity implements postAsync.PostExecuteInterface {
     private boolean isregistered;
     private static final String TAG="Registration";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
@@ -173,7 +173,7 @@ public class Registration extends AppCompatActivity {
             Log.i(TAG, jstr);
             String rsaEncryptMsg=RSA.encryptWithKey(Preferences.SERVER_PUB_KEY, jstr);
             Log.i(TAG, "Message :" + rsaEncryptMsg);
-            new postAsync("Loading...",this).execute("2","Message",rsaEncryptMsg, Preferences.url+"session/update");
+            new postAsync("Loading...",this,this).execute("2","Message",rsaEncryptMsg, Preferences.url+"session/update");
             Log.i(TAG,"Sent cred");
         }
         catch (Exception e)
@@ -183,6 +183,10 @@ public class Registration extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void postExecute(int responseCode) {
+
+    }
 }
 
 

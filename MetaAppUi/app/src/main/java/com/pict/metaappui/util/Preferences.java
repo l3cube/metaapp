@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
 
 public class Preferences {
     public static final String url="http://10.42.0.1:5000/";
-    public static final String proxyurl="http://10.42.0.1:5000/";
+    public static final String proxyurl="http://10.42.0.1:5001/";
     public static final String SHARED_PREFERENCES = "SHARED_PREFERENCES";
     public static final String RSA_GENERATED = "RSA_GENERATED";
     public static final String RSA_PUBLIC_KEY = "RSA_PUBLIC_KEY";

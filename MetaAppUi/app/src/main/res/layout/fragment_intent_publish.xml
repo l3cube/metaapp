@@ -57,26 +57,59 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="38dp" />
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="date"
-        android:ems="10"
-        android:id="@+id/expiryDateText"
-        android:layout_below="@+id/expiryLabel"
-        android:layout_alignStart="@+id/descriptionLabel"
-        android:text="Select Date"
-        android:layout_marginTop="38dp"
-        android:enabled="false"/>
+        <LinearLayout
+            android:id="@+id/expiryDateLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:layout_below="@+id/expiryLabel"
+            android:layout_alignParentStart="true"
+            android:paddingLeft="5dp">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Change Expiry Date"
-        android:id="@+id/expiryDateButton"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@id/expiryDateText"
-        android:layout_marginTop="38dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="date"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:ems="10"
+                android:id="@+id/expiryDateText"
+                android:text="Select Date"
+                android:textAlignment="center"
+                android:editable="false"/>
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/expiryDateButton"
+                android:src="@android:drawable/ic_menu_my_calendar" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/expiryTimeLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:layout_below="@+id/expiryDateLayout"
+            android:layout_alignParentStart="true"
+            android:paddingLeft="5dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="date"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:ems="10"
+                android:id="@+id/expiryTimeText"
+                android:text="Select Time"
+                android:textAlignment="center"
+                android:editable="false"/>
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/expiryTimeButton"
+                android:src="@android:drawable/ic_menu_day" />
+        </LinearLayout>
 
     <Button
         android:layout_width="wrap_content"
@@ -85,8 +118,8 @@
         android:id="@+id/publishButton"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_below="@id/expiryDateButton"
-        android:layout_marginTop="38dp"/>
+        android:layout_below="@id/expiryTimeLayout"
+        android:layout_marginTop="40dp"/>
 
     </RelativeLayout>
     </ScrollView>

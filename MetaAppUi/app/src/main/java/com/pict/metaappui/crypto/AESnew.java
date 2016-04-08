@@ -32,23 +32,24 @@ public final class AESnew {
     private static final String characterEncoding = "UTF-8";
     private static final String cipherTransformation = "AES/CBC/PKCS5Padding";
     private static final String aesEncryptionAlgorithm = "AES";
-    private static final String key = "Aes seed value";
+    private String key;
     private static byte[] ivBytes = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
     private static byte[] keyBytes;
 
     private static AESnew instance = null;
 
 
-    AESnew()
+    AESnew(String key)
     {
+        this.key = key;
         SecureRandom random = new SecureRandom();
         AESnew.ivBytes = new byte[16];
         random.nextBytes(AESnew.ivBytes);
     }
 
-    public static AESnew getInstance() {
+    public static AESnew getInstance(String key) {
         if(instance == null){
-            instance = new AESnew();
+            instance = new AESnew(key);
         }
 
         return instance;
